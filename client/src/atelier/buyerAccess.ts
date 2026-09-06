@@ -38,6 +38,17 @@ export function buyerDownloadArtifactType(
 export const buyerDownloadAuditFailureMessage =
   "파일은 저장됐지만 다운로드 기록을 남기지 못했습니다.";
 
+export function buyerMagicLinkErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+  if (message.includes("rate limit") || message.includes("too many requests"))
+    return "인증 메일 발송 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.";
+  if (message.includes("redirect") || message.includes("url is not allowed"))
+    return "현재 Preview 주소가 인증 복귀 URL로 허용되지 않았습니다. 관리자에게 알려주세요.";
+  if (message.includes("email") || message.includes("smtp"))
+    return "인증 메일 서비스를 사용할 수 없습니다. 관리자에게 이메일 발송 설정을 확인해 달라고 요청해 주세요.";
+  return "로그인 메일을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
 export async function completeBuyerDownloadAudit(
   record: () => Promise<void>
 ) {
@@ -106,7 +117,7 @@ export function useBuyerSession() {
       email: normalized,
       options: { emailRedirectTo: buyerEmailRedirectUrl() },
     });
-    if (error) throw Error("로그인 메일을 보내지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    if (error) throw Error(buyerMagicLinkErrorMessage(error));
   };
 
   const signOut = async () => {

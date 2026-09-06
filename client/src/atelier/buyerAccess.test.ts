@@ -4,6 +4,7 @@ import {
   buyerDownloadAuditFailureMessage,
   buyerDownloadArtifactType,
   buyerEmailRedirectUrl,
+  buyerMagicLinkErrorMessage,
   completeBuyerDownloadAudit,
 } from "./buyerAccess";
 
@@ -38,5 +39,11 @@ describe("buyer email access boundary", () => {
       recorded: false,
       message: buyerDownloadAuditFailureMessage,
     });
+  });
+
+  it("maps Supabase Magic Link failures to actionable Korean messages", () => {
+    expect(buyerMagicLinkErrorMessage(new Error("Email rate limit exceeded"))).toContain("발송 한도");
+    expect(buyerMagicLinkErrorMessage(new Error("Redirect URL is not allowed"))).toContain("복귀 URL");
+    expect(buyerMagicLinkErrorMessage(new Error("SMTP is not configured"))).toContain("이메일 발송 설정");
   });
 });
