@@ -1,5 +1,14 @@
 import { z } from "zod";
 import { newRequestId } from "@/lib/requestId";
+import {
+  defaultTemplateForProduct,
+  getTemplate,
+  materialDefaults,
+  parameterDefaults,
+  templateIds,
+  templateParts,
+  type TemplateId,
+} from "./productDefinition";
 const id = z.string().uuid(),
   point = z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]),
   color = z.string().regex(/^#[a-f0-9]{6}$/i);
@@ -7,7 +16,7 @@ const dimension = z.number().min(0.1).max(200);
 export const partSchema = z.object({
   id,
   name: z.string().min(1).max(60),
-  shape: z.enum(["sphere", "box", "outline"]),
+  shape: z.enum(["sphere", "box", "outline", "torus", "cylinder", "capsule"]),
   color,
   width: dimension,
   height: dimension,
@@ -17,6 +26,8 @@ export const partSchema = z.object({
   z: z.number().min(-200).max(200),
   rotation: z.number().min(-180).max(180),
   group: z.string().max(40).optional(),
+  kind: z.string().max(60).optional(),
+  materialSlot: z.string().max(40).optional(),
   front: z.array(point).max(128).default([]),
   side: z.array(point).max(128).default([]),
 });
@@ -32,12 +43,17 @@ export const assetSchema = z.object({
     .string()
     .regex(/^[a-f0-9-]{36}\/[a-f0-9-]{36}\/[a-f0-9-]{36}$/)
     .optional(),
+  width: z.number().int().min(1).max(1200).optional(),
+  height: z.number().int().min(1).max(1200).optional(),
 });
 export const projectSchema = z.object({
   version: z.literal(1),
   id,
   name: z.string().trim().min(1).max(100),
   product: z.enum(["plush", "bag", "shirt"]),
+  templateId: z.enum(templateIds as [TemplateId, ...TemplateId[]]).optional(),
+  parameters: z.record(z.string(), z.union([z.string().max(40), z.number().finite().min(-500).max(500), z.boolean()])).default({}),
+  materials: z.record(z.string(), z.string().min(1).max(40)).default({}),
   color,
   width: dimension,
   height: dimension,
@@ -112,27 +128,36 @@ export const outlines: Record<Project["product"], Point[]> = {
     [0.02, 0.28],
   ],
 };
-export function createProject(product: Project["product"] = "plush"): Project {
+export function createProjectFromTemplate(templateId: TemplateId): Project {
+  const template = getTemplate(templateId),
+    product = template.product,
+    color = "#aec3ad";
   return {
     version: 1,
     id: newRequestId(),
-    name: `새 ${productNames[product]} 디자인`,
+    name: `새 ${template.label} 디자인`,
     product,
-    color: "#aec3ad",
-    width: product === "shirt" ? 55 : product === "bag" ? 35 : 20,
-    height: product === "shirt" ? 70 : product === "bag" ? 38 : 23,
-    depth: product === "shirt" ? 2 : product === "bag" ? 10 : 15,
+    templateId,
+    parameters: parameterDefaults(templateId),
+    materials: materialDefaults(templateId),
+    color,
+    width: template.dimensions.width,
+    height: template.dimensions.height,
+    depth: template.dimensions.depth,
     front: [],
     side: [],
     useOutline: false,
     references: {},
     assets: [],
     decals: [],
-    parts: [],
+    parts: templateParts(templateId, color).map(part => ({ ...part, id: newRequestId(), front: [], side: [] })),
     notes: "",
     updatedAt: new Date().toISOString(),
     revision: 0,
   };
+}
+export function createProject(product: Project["product"] = "plush"): Project {
+  return createProjectFromTemplate(defaultTemplateForProduct(product));
 }
 export function validateOutline(points: Point[]) {
   if (points.length < 3) throw Error("윤곽선을 3개 이상의 점으로 그려 주세요.");
@@ -161,7 +186,16 @@ export function validateOutline(points: Point[]) {
     }
 }
 export function parseProject(raw: unknown) {
-  const p = projectSchema.parse(raw);
+  const parsed = projectSchema.parse(raw);
+  const fallback = defaultTemplateForProduct(parsed.product),
+    requestedTemplate = parsed.templateId ?? fallback,
+    templateId = getTemplate(requestedTemplate).product === parsed.product ? requestedTemplate : fallback,
+    p: Project = {
+      ...parsed,
+      templateId,
+      parameters: { ...parameterDefaults(templateId), ...parsed.parameters },
+      materials: { ...materialDefaults(templateId), ...parsed.materials },
+    };
   const ids = new Set(p.assets.map(a => a.id));
   if (
     ids.size !== p.assets.length ||

@@ -5,6 +5,8 @@ import { DecalGeometry } from "three/examples/jsm/geometries/DecalGeometry.js";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { productGeometry, partGeometry } from "./geometry";
 import { outlines, type Project } from "./project";
+import { materialAppearance, resolveTemplateParts } from "./productDefinition";
+import { buildDesignProof, buildProofExportPlan } from "./designProof";
 export function saveBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob),
     a = document.createElement("a");
@@ -12,6 +14,14 @@ export function saveBlob(blob: Blob, name: string) {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function cameraPoses(distance: number): Record<"front" | "side" | "back" | "free", number[]> {
+  return {
+    front: [0, 0, distance],
+    side: [distance, 0, 0],
+    back: [0, 0, -distance],
+    free: [distance * 0.7, distance * 0.3, distance],
+  };
 }
 function dispose(root: THREE.Object3D) {
   root.traverse(o => {
@@ -45,7 +55,7 @@ export function ProductPreview({
     >(undefined),
     [unsupported, setUnsupported] = useState(false),
     [error, setError] = useState(""),
-    [view, setView] = useState("front"),
+    [view, setView] = useState<"front" | "side" | "back" | "free">("front"),
     [exporting, setExporting] = useState(false),
     [texturesReady, setTexturesReady] = useState(true);
   useEffect(() => {
@@ -119,15 +129,19 @@ export function ProductPreview({
       e.scene.add(root);
       const body = new THREE.Mesh(
         geometry,
-        new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.9 })
+        new THREE.MeshStandardMaterial({ color: p.color, ...materialAppearance(p.materials.body) })
       );
       body.name = "Main body";
       root.add(body);
       const groups = new Map<string, THREE.Group>();
-      p.parts.forEach(part => {
+      resolveTemplateParts({
+        templateId: p.templateId!,
+        parameters: p.parameters,
+        parts: p.parts,
+      }).forEach(part => {
         const mesh = new THREE.Mesh(
           partGeometry(part),
-          new THREE.MeshStandardMaterial({ color: part.color, roughness: 0.9 })
+          new THREE.MeshStandardMaterial({ color: part.color, ...materialAppearance(p.materials[part.materialSlot ?? "body"]) })
         );
         mesh.name = part.name;
         mesh.userData.partId = part.id;
@@ -218,12 +232,7 @@ export function ProductPreview({
     const e = engine.current;
     if (!e) return;
     const distance = Math.max(p.width, p.height, p.depth) * 2.2;
-    const poses: Record<string, number[]> = {
-      front: [0, 0, distance],
-      side: [distance, 0, 0],
-      back: [0, 0, -distance],
-      free: [distance * 0.7, distance * 0.3, distance],
-    };
+    const poses = cameraPoses(distance);
     e.camera.position.fromArray(poses[view]);
     e.controls.target.set(0, 0, 0);
     e.controls.update();
@@ -279,6 +288,36 @@ export function ProductPreview({
     } catch {
       onMessage("3D 파일 내보내기에 실패했습니다.");
     } finally {
+      setExporting(false);
+    }
+  };
+  const proofViews = async () => {
+    const e = engine.current;
+    if (!e || unsupported || !texturesReady) return;
+    setExporting(true);
+    const original = e.camera.position.clone();
+    try {
+      const poses = cameraPoses(Math.max(p.width, p.height, p.depth) * 2.2);
+      const exportPlan = buildProofExportPlan(buildDesignProof(p));
+      const views = ["front", "side", "back"] as const;
+      for (let index = 0; index < views.length; index++) {
+        const viewName = views[index]!;
+        e.camera.position.fromArray(poses[viewName]);
+        e.controls.target.set(0, 0, 0);
+        e.controls.update();
+        e.renderer.render(e.scene, e.camera);
+        const blob = await new Promise<Blob | null>(resolve =>
+          e.renderer.domElement.toBlob(resolve, "image/png")
+        );
+        if (!blob) throw Error("이미지 출력을 만들지 못했습니다.");
+        saveBlob(blob, exportPlan.files[index]!.filename);
+      }
+      onMessage("Design Proof용 정면·옆면·뒷면 PNG 3장을 저장했습니다.");
+    } catch {
+      onMessage("Design Proof용 뷰 패키지를 내보내지 못했습니다.");
+    } finally {
+      e.camera.position.copy(original);
+      e.controls.update();
       setExporting(false);
     }
   };
@@ -383,12 +422,12 @@ export function ProductPreview({
       )}
       {!unsupported && (
         <div className="at-view-buttons">
-          {[
+          {([
             ["front", "정면"],
             ["side", "옆면"],
             ["back", "뒷면"],
             ["free", "자유 회전"],
-          ].map(([value, label]) => (
+          ] as const).map(([value, label]) => (
             <button
               key={value}
               aria-pressed={view === value}
@@ -407,6 +446,9 @@ export function ProductPreview({
       <div className="at-view-buttons">
         <button onClick={png} disabled={!!error || !texturesReady}>
           완성 미리보기 PNG
+        </button>
+        <button onClick={proofViews} disabled={unsupported || !!error || !texturesReady || exporting}>
+          Design Proof 3면 PNG
         </button>
         <button
           onClick={glb}

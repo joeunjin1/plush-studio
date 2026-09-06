@@ -26,6 +26,14 @@ export async function readImage(file: File): Promise<string> {
     URL.revokeObjectURL(url);
   }
 }
+export async function imageDimensions(data: string) {
+  return await new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve({ width: image.width, height: image.height });
+    image.onerror = reject;
+    image.src = data;
+  });
+}
 function db() {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const r = indexedDB.open("plush-atelier", 1);

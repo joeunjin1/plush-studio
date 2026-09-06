@@ -21,6 +21,20 @@
 - [x] Document explicit Supabase and Vercel Development, Preview, and Production environment mappings without storing secret values.
 - [ ] Configure distinct Vercel Preview and Production Supabase targets, then verify a Preview deployment does not write to production manufacturing data.
 - [ ] Update the operations runbook with the final, applied Preview and Production branch-to-database mapping after the staging Supabase project exists.
+- [ ] Create the approved `plush-studio-staging` Supabase project in Seoul and apply the version-controlled migration set without copying Production data.
 - [ ] Add active-version, construction notes, and QA criteria payloads to both Tech Pack PDF and XLSX exports.
 - [ ] Add user-facing failure and loading states for GLB/PDF/XLSX exports and cloud saves, plus empty states for key data flows.
 - [x] Add a read-only Supabase schema validation test that verifies every required collaboration table, private asset bucket, and access-control function after migrations are applied.
+- [x] Audit the three-view, bag, and T-shirt Product Atelier experience for customer confidence in complete 3D creation, then produce an approved UX, capability, and validation improvement plan before implementation.
+- [x] Implement product definition metadata with template, parameter, material-slot, print-zone, constraint, and design-readiness fields for Product Atelier projects.
+- [x] Replace generic basic forms with structured, parametric plush templates for bear, rabbit, cat, keyring, and cushion designs.
+- [x] Add structured bag templates for tote, pouch, crossbody, backpack, eco bag, and keyring pouch with compatible handles, straps, zippers, pockets, closures, and hardware components.
+- [x] Add T-shirt front/back/sleeve/neck structure, fit and size presets, textile options, print-safe zones, and two-dimensional artwork placement controls.
+- [x] Build material swatches and product-specific visual material slots with clear production limitations and appearance guidance.
+- [x] Complete printable design-zone validation with blocking required front/side/back view coverage by product template in addition to implemented resolution, placement, size, and safe-margin checks.
+- [x] Complete Design Readiness with explicit shape quality and required-view validation, then block production-request submission for unresolved errors.
+- [x] Generate a customer-facing Design Proof containing version ID, view exports, product configuration, design readiness result, and production-scope disclaimer.
+- [x] Improve the mobile-first Product Atelier flow with protected product switching, compact product-specific controls, accessible 3D view controls, and step-focused editing.
+- [x] Redesign the mobile 3D preview so the canvas remains dominant and view/export controls do not collapse into a narrow vertical rail.
+- [x] Verify actual Design Proof multi-view export behavior and complete documented desktop/mobile task flows for plush, bag, and T-shirt templates, including template switch, required-reference errors, Proof state, and request blocking.
+- [ ] Split the remaining large initial JavaScript bundle so Product Atelier, 3D rendering, and document export dependencies load only when a customer enters the relevant workflow.

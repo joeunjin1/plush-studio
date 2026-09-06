@@ -130,10 +130,17 @@ export function productGeometry(p: Project) {
 export function partGeometry(p: Part) {
   if (p.shape === "outline")
     return shapeGeometry(p.front, p.side, p.width, p.height, p.depth);
-  const g =
-    p.shape === "box"
-      ? new THREE.BoxGeometry(p.width, p.height, p.depth)
-      : new THREE.SphereGeometry(1, 32, 24);
+  const g = p.shape === "box"
+    ? new THREE.BoxGeometry(p.width, p.height, p.depth)
+    : p.shape === "cylinder"
+      ? new THREE.CylinderGeometry(p.width / 2, p.width / 2, p.height, 24)
+      : p.shape === "torus"
+        ? new THREE.TorusGeometry(Math.max(p.width, p.height) / 2.8, Math.max(p.depth, 0.45) / 2, 12, 36)
+        : p.shape === "capsule"
+          ? new THREE.CapsuleGeometry(Math.max(p.width, p.depth) / 2, Math.max(0.1, p.height - Math.max(p.width, p.depth)), 12, 24)
+          : new THREE.SphereGeometry(1, 32, 24);
   if (p.shape === "sphere") g.scale(p.width / 2, p.height / 2, p.depth / 2);
+  if (p.shape === "torus") g.scale(1, p.height / Math.max(p.width, p.height), 1);
+  if (p.shape === "capsule") g.scale(1, 1, p.depth / Math.max(p.width, p.depth));
   return g;
 }

@@ -4,6 +4,7 @@ import { newRequestId } from "@/lib/requestId";
 import { supabase } from "@/lib/supabase";
 import {
   createProject,
+  createProjectFromTemplate,
   parseProject,
   localCopy,
   productNames,
@@ -11,6 +12,10 @@ import {
   type Part,
   type Asset,
 } from "./project";
+import { DesignProofPanel, ProductSettingsPanel, TemplatePanel } from "./ConfiguratorPanels";
+import { productionRequestEligibility } from "./designProof";
+import { getPrintZones, getTemplate, type TemplateId } from "./productDefinition";
+import { templateIds } from "./productDefinition";
 import { productGeometry } from "./geometry";
 import {
   saveLocal,
@@ -19,6 +24,7 @@ import {
   listCloud,
   openCloud,
   readImage,
+  imageDimensions,
   splitThreeView,
   hydrate,
 } from "./storage";
@@ -40,9 +46,15 @@ function Field({
     </label>
   );
 }
+function initialProjectFromUrl() {
+  const candidate = new URLSearchParams(window.location.search).get("template") as TemplateId | null;
+  return candidate && templateIds.includes(candidate)
+    ? createProjectFromTemplate(candidate)
+    : createProject();
+}
 export default function Atelier() {
-  const [p, setP] = useState<Project>(() => createProject()),
-    [tab, setTab] = useState("shape"),
+  const [p, setP] = useState<Project>(initialProjectFromUrl),
+    [tab, setTab] = useState("template"),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [selected, setSelected] = useState<string[]>([]),
@@ -51,6 +63,7 @@ export default function Atelier() {
       Array<{ id: string; name: string; revision: number }>
     >([]),
     [shelf, setShelf] = useState(false),
+    [pendingTemplate, setPendingTemplate] = useState<TemplateId | null>(null),
     [outlineView, setOutlineView] = useState<"front" | "side">("front"),
     [contact, setContact] = useState({
       name: "",
@@ -139,6 +152,22 @@ export default function Atelier() {
     dirty.current = false;
     requestId.current = newRequestId();
   };
+  const chooseTemplate = (templateId: TemplateId) => {
+    if (p.templateId === templateId) return;
+    setPendingTemplate(templateId);
+  };
+  const startTemplate = () => {
+    if (!pendingTemplate) return;
+    const templateId = pendingTemplate;
+    const next = getTemplate(templateId);
+    void run(async () => {
+      await backupCurrent();
+      replace(createProjectFromTemplate(templateId));
+      setPendingTemplate(null);
+      setTab("shape");
+      setMessage(`${next.label}의 기본 구조를 불러왔습니다. 치수와 참조 이미지를 이어서 확인하세요.`);
+    });
+  };
   const addAsset = async (
     file: File | undefined,
     view?: "front" | "side" | "back"
@@ -147,11 +176,18 @@ export default function Atelier() {
     await run(async () => {
       if (p.assets.length >= 12)
         throw Error("이미지는 최대 12개까지 보관할 수 있습니다.");
-      const asset: Asset = {
+      const data = await readImage(file),
+        dimensions = await imageDimensions(data),
+        asset: Asset = {
         id: newRequestId(),
         name: file.name,
-        data: await readImage(file),
+        data,
+        width: dimensions.width,
+        height: dimensions.height,
       };
+      const printZone = p.templateId
+        ? getPrintZones({ templateId: p.templateId, width: p.width, height: p.height })[0]
+        : undefined;
       edit({
         assets: [...p.assets, asset],
         ...(view
@@ -164,9 +200,9 @@ export default function Atelier() {
                   id: newRequestId(),
                   assetId: asset.id,
                   face: "front" as const,
-                  x: 0,
-                  y: 0,
-                  size: Math.min(p.width * 0.4, 100),
+                  x: printZone?.x ?? 0,
+                  y: printZone?.y ?? 0,
+                  size: Math.min(p.width * 0.4, printZone?.width ?? 100),
                   rotation: 0,
                 },
               ],
@@ -199,6 +235,9 @@ export default function Atelier() {
   const submit = () =>
     run(async () => {
       if (!supabase) throw Error("온라인 접수 연결이 필요합니다.");
+      const eligibility = productionRequestEligibility(p);
+      if (!eligibility.eligible)
+        throw Error("완성도 검사에서 보완할 항목이 있습니다. 5. 완성도 검사에서 빨간 항목을 해결한 뒤 접수해 주세요.");
       if (
         contact.name.trim().length < 2 ||
         !Number.isInteger(contact.quantity) ||
@@ -241,10 +280,10 @@ export default function Atelier() {
     }}>
       <header className="at-header">
         <a href="#design">
-          <ArrowLeft size={17} /> 쉬운 인형 만들기
+          <ArrowLeft size={17} /> 제품 만들기
         </a>
         <b>
-          PRODUCT ATELIER <small>삼면도로 만드는 나만의 제품</small>
+          PRODUCT ATELIER <small>구조와 디자인을 함께 완성하는 3D 제품 만들기</small>
         </b>
         <a href="#requests">내 제작 요청</a>
       </header>
@@ -254,7 +293,7 @@ export default function Atelier() {
             <p>DESIGN · PREVIEW · MAKE</p>
             <h1>그림에서 제품으로.</h1>
             <span>
-              인형, 가방, 티셔츠를 편집하고 디자인 파일까지 보관하세요.
+              인형, 가방, 티셔츠의 구조·소재·인쇄를 확인하고 Design Proof로 보관하세요.
             </span>
           </div>
           <button onClick={showShelf} disabled={busy}>
@@ -268,15 +307,7 @@ export default function Atelier() {
                 <button
                   key={product}
                   aria-pressed={p.product === product}
-                  onClick={() =>
-                    run(async () => {
-                      await backupCurrent();
-                      replace(createProject(product));
-                      setMessage(
-                        "이전 변경은 이 기기에 저장하고 새 작업을 열었습니다."
-                      );
-                    })
-                  }
+                  onClick={() => chooseTemplate(product === "plush" ? "bear" : product === "bag" ? "tote" : "tee-regular")}
                 >
                   {productNames[product]}
                 </button>
@@ -322,10 +353,12 @@ export default function Atelier() {
           <fieldset disabled={busy} className="at-controls">
             <nav>
               {[
-                ["shape", "1. 형태 · 삼면도"],
-                ["print", "2. 컬러 · 디자인"],
-                ["parts", "3. 부위 편집"],
-                ["request", "4. 확인 · 접수"],
+                ["template", "1. 제품 템플릿"],
+                ["shape", "2. 치수 · 참조"],
+                ["print", "3. 소재 · 인쇄"],
+                ["parts", "4. 구조 부위"],
+                ["proof", "5. 완성도 검사"],
+                ["request", "6. 확인 · 접수"],
               ].map(([id, label]) => (
                 <button
                   key={id}
@@ -336,12 +369,14 @@ export default function Atelier() {
                 </button>
               ))}
             </nav>
+            {tab === "template" && (
+              <TemplatePanel project={p} onSelect={chooseTemplate} />
+            )}
             {tab === "shape" && (
               <>
-                <h2>삼면도로 형태를 맞춰 보세요</h2>
+                <h2>{getTemplate(p.templateId!).label}의 비율을 맞춰 보세요</h2>
                 <p>
-                  정면 윤곽과 두께만으로 입체를 만들거나, 정면·옆면 윤곽을 함께
-                  사용하세요. 뒷면은 제작 참고 이미지로 보관됩니다.
+                  기본 구조는 템플릿이 유지합니다. 삼면도는 비율과 그래픽을 보정하는 참고 자료이며, 사진만으로 봉제 구조를 자동 복원하지는 않습니다.
                 </p>
                 <div className="at-dimensions">
                   {(["width", "height", "depth"] as const).map((key, i) => (
@@ -434,8 +469,7 @@ export default function Atelier() {
                   ))}
                 </div>
                 <p className="at-help">
-                  가로 삼면도는 위 버튼으로 세 면을 나누고, 개별 이미지도
-                  아래에서 올릴 수 있습니다. 이미지는 최대 1,200px로 보관합니다.
+                  가로 삼면도는 위 버튼으로 세 면을 나누고, 개별 이미지도 아래에서 올릴 수 있습니다. 이미지는 최대 1,200px로 보관되며, 투명 또는 단색 배경일수록 윤곽 검토가 정확합니다.
                 </p>
                 <div className="at-tabs">
                   <button
@@ -507,14 +541,17 @@ export default function Atelier() {
                   기본형으로 보기
                 </button>
                 <p className="at-help">
-                  팔·다리처럼 가로로 갈라지는 윤곽은 두께 방식(옆면 윤곽 없음)을
-                  쓰거나 별도 부위로 나누세요. 사진만으로 봉제 구조를 자동
-                  복원하지는 않습니다.
+                  손잡이·소매·귀처럼 분리된 구조는 다음 ‘구조 부위’ 단계에서 템플릿 부위로 조정하세요. 윤곽은 본체 비율을 확인하는 보조 수단입니다.
                 </p>
               </>
             )}
             {tab === "print" && (
               <>
+                <ProductSettingsPanel
+                  project={p}
+                  onParameters={parameters => edit({ parameters })}
+                  onMaterials={materials => edit({ materials })}
+                />
                 <h2>컬러와 디자인을 더하세요</h2>
                 <Field label="제품 바탕색">
                   <input
@@ -556,9 +593,16 @@ export default function Atelier() {
                   />
                 </label>
                 <p className="at-help">
-                  최대 6개. 배경 없는 PNG를 사용하면 바탕색과 자연스럽게
-                  어울립니다.
+                  최대 6개. 배경 없는 PNG를 사용하면 바탕색과 자연스럽게 어울립니다. 그래픽은 선택한 인쇄 안전 영역 안에 배치해야 완성도 검사를 통과합니다.
                 </p>
+                <div className="at-print-zones" aria-label="인쇄 안전 영역">
+                  {getPrintZones({ templateId: p.templateId!, width: p.width, height: p.height }).map(zone => (
+                    <article key={zone.id}>
+                      <b>{zone.label}</b>
+                      <span>{zone.face === "front" ? "정면" : "뒷면"} · 최대 {zone.width} × {zone.height}cm</span>
+                    </article>
+                  ))}
+                </div>
                 {p.decals.map(d => (
                   <section className="at-decal" key={d.id}>
                     <div className="at-decal-heading">
@@ -630,11 +674,9 @@ export default function Atelier() {
             )}
             {tab === "parts" && (
               <>
-                <h2>부위를 나눠 수정하세요</h2>
+                <h2>구조 부위를 확인하고 조정하세요</h2>
                 <p>
-                  귀, 손잡이, 리본 등 부위를 개별 객체로 추가합니다. 선택한
-                  부위는 묶거나 분리할 수 있고, GLB에도 분리된 객체로
-                  저장됩니다.
+                  {getTemplate(p.templateId!).label}에는 필요한 구조 부위가 기본으로 포함되어 있습니다. 손잡이·지퍼·스트랩·소매처럼 실제 구성품을 먼저 확인하고, 필요한 경우에만 고급 부위를 추가하세요.
                 </p>
                 <button
                   disabled={p.parts.length >= 12}
@@ -651,6 +693,8 @@ export default function Atelier() {
                       y: 0,
                       z: p.depth / 2,
                       rotation: 0,
+                      kind: "custom-part",
+                      materialSlot: "body",
                       front: [],
                       side: [],
                     };
@@ -658,7 +702,7 @@ export default function Atelier() {
                     setSelected([part.id]);
                   }}
                 >
-                  <Plus size={16} /> 부위 추가
+                  <Plus size={16} /> 고급: 사용자 부위 추가
                 </button>
                 <div className="at-part-list">
                   {p.parts.map(part => (
@@ -747,7 +791,18 @@ export default function Atelier() {
                         >
                           <option value="sphere">둥근 부위</option>
                           <option value="box">사각 부위</option>
+                          <option value="capsule">스트랩·소매형</option>
+                          <option value="torus">고리·손잡이형</option>
+                          <option value="cylinder">원통형</option>
                           <option value="outline">직접 그린 윤곽</option>
+                        </select>
+                      </Field>
+                      <Field label="소재 슬롯">
+                        <select
+                          value={part.materialSlot ?? "body"}
+                          onChange={e => updatePart(part.id, { materialSlot: e.target.value })}
+                        >
+                          {getTemplate(p.templateId!).materialSlots.map(slot => <option value={slot.id} key={slot.id}>{slot.label}</option>)}
                         </select>
                       </Field>
                       <Field label="부위 색상">
@@ -828,14 +883,18 @@ export default function Atelier() {
                   ))}
               </>
             )}
+            {tab === "proof" && <DesignProofPanel project={p} onMessage={setMessage} />}
             {tab === "request" && (
               <>
                 <h2>디자인을 고정하고 제작 요청</h2>
                 <p>
-                  {p.name} · {productNames[p.product]}
+                  {p.name} · {getTemplate(p.templateId!).label}
                   <br />
                   {p.width} × {p.height} × {p.depth}cm · 부위 {p.parts.length}개
                   · 디자인 {p.decals.length}개
+                </p>
+                <p className="at-readiness-hint">
+                  먼저 5. 완성도 검사에서 Design Proof를 확인하세요. 빨간 보완 항목이 있는 디자인은 제작 요청을 접수할 수 없습니다.
                 </p>
                 <Field label="제작 설명 · 희망 일정">
                   <textarea
@@ -894,8 +953,7 @@ export default function Atelier() {
                 </button>
                 <p className="at-help">
                   이메일 로그인이 필요합니다. 접수 시 현재 디자인과 이미지를
-                  고정해 보관합니다. 가격·납기·샘플을 확인하기 전에는 결제나
-                  발주가 확정되지 않습니다.
+                  고정해 보관합니다. Design Proof는 디자인 검토 자료이며, 실제 샘플·색상·원단·공정 가능 여부는 전문가 검토 후 최종 확인됩니다.
                 </p>
                 <p className="at-help"><a href="#requests">이메일 로그인 / 내 요청 확인</a> · 이동 전 변경 내용을 이 기기에 저장합니다. 돌아오면 ‘내 저장 작업’에서 이어서 편집하세요.</p>
                 {receipt && (
@@ -908,6 +966,19 @@ export default function Atelier() {
               </>
             )}
           </fieldset>
+          {pendingTemplate && (
+            <section aria-modal="true" className="at-template-confirm" role="dialog" aria-label="새 제품 템플릿 시작 확인">
+              <div>
+                <span>NEW TEMPLATE</span>
+                <h2>{getTemplate(pendingTemplate).label}로 새 디자인을 시작할까요?</h2>
+                <p>현재 작업은 이 기기에 먼저 저장됩니다. 새 템플릿에는 제품 구조·소재 슬롯·인쇄 안전 영역이 포함됩니다.</p>
+                <div>
+                  <button onClick={() => setPendingTemplate(null)}>현재 작업 계속</button>
+                  <button className="at-primary" onClick={startTemplate}>새 템플릿 시작</button>
+                </div>
+              </div>
+            </section>
+          )}
           <aside>
             <ProductPreview project={p} onMessage={setMessage} />
             <div className="at-backups">
