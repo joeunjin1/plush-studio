@@ -66,3 +66,4 @@
 - [x] Make protected-export audit persistence observable and fail-safe so a download cannot be reported as fully successful when its metadata audit insert fails.
 - [x] Await the protected-export audit insert before presenting export success, and show a distinct partial-success state if the file download completes but audit persistence fails.
 - [ ] Add protected-export regression tests for audit-success and audit-failure messaging, then repeat the current staging export UAT and verify one metadata-only audit row.
+- [x] Center the primary 3D product body within the desktop preview canvas while preserving full-product framing for asymmetric accessory geometry.

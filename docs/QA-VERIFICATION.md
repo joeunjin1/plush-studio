@@ -10,6 +10,8 @@ The verified replacement staging commit `ccaee57` is Ready at `https://plush-stu
 
 The desktop review at 1536 × 864 confirmed the Basic Bear's complete silhouette now remains inside the WebGL frame with visible margin, while the editor remains readable beside it. The viewing instruction is separated into a compact guidance panel, the fidelity limitation is collapsed by default, and the export actions no longer compete with the canvas for visual attention. The mobile review at 390 × 844 retained preview-first ordering and showed the whole Basic Bear without clipping. This is a readability improvement for the procedural prototype, not evidence of a factory-validated digital twin.
 
+The follow-up desktop review confirmed the Basic Bear's primary body is centered in the preview canvas rather than shifted toward the right edge. The camera now targets the primary body while calculating sufficient padded space for all accessory geometry; panning is disabled to preserve that stable framing. A mobile review at 390 × 844 retained an unclipped, centered product with preview-first ordering.
+
 Before release approval, rerun the buyer trial QA from a normal browser tab and verify: anonymous 3D editing is usable; a protected action opens the email gate; no download or cloud write occurs before authentication; a verified user returns to the same design; and a permitted export writes a `buyer_download_events` metadata row only in the selected environment.
 
 ## 2026-09-06 — Narrow mobile layout

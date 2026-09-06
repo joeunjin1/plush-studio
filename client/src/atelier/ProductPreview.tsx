@@ -71,6 +71,14 @@ export function previewCameraDistance(
   return Math.max(4, Math.max(verticalDistance, horizontalDistance) * 1.58 + size.z * 0.25);
 }
 
+export function previewFrameSize(bounds: THREE.Box3, target: THREE.Vector3) {
+  return new THREE.Vector3(
+    2 * Math.max(Math.abs(bounds.min.x - target.x), Math.abs(bounds.max.x - target.x)),
+    2 * Math.max(Math.abs(bounds.min.y - target.y), Math.abs(bounds.max.y - target.y)),
+    2 * Math.max(Math.abs(bounds.min.z - target.z), Math.abs(bounds.max.z - target.z))
+  );
+}
+
 function framePreview(
   engine: {
     camera: THREE.PerspectiveCamera;
@@ -82,8 +90,11 @@ function framePreview(
   if (!engine.root) return;
   const bounds = new THREE.Box3().setFromObject(engine.root);
   if (bounds.isEmpty()) return;
-  const center = bounds.getCenter(new THREE.Vector3());
-  const size = bounds.getSize(new THREE.Vector3());
+  const body = engine.root.getObjectByName("Main body");
+  const center = body
+    ? new THREE.Box3().setFromObject(body).getCenter(new THREE.Vector3())
+    : bounds.getCenter(new THREE.Vector3());
+  const size = previewFrameSize(bounds, center);
   const distance = previewCameraDistance(size, engine.camera.fov, engine.camera.aspect);
   engine.camera.position.copy(center).add(previewDirection(view).multiplyScalar(distance));
   engine.camera.near = Math.max(0.1, distance / 100);
@@ -195,6 +206,7 @@ export function ProductPreview({
     host.current.replaceChildren(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+    controls.enablePan = false;
     scene.add(new THREE.HemisphereLight("#ffffff", "#9da99a", 3));
     const light = new THREE.DirectionalLight("#fff9ed", 3);
     light.position.set(-50, 100, 150);

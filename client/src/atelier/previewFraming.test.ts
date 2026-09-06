@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { previewCameraDistance } from "./ProductPreview";
+import { previewCameraDistance, previewFrameSize } from "./ProductPreview";
 
 describe("ProductPreview camera framing", () => {
   it("keeps a full configured product inside a padded desktop frustum", () => {
@@ -20,5 +20,17 @@ describe("ProductPreview camera framing", () => {
     const tall = previewCameraDistance(new THREE.Vector3(20, 36, 12), 35, 1.35);
 
     expect(tall).toBeGreaterThan(compact);
+  });
+
+  it("centers on the primary body while reserving room for asymmetric accessories", () => {
+    const bounds = new THREE.Box3(
+      new THREE.Vector3(-10, -12, -6),
+      new THREE.Vector3(22, 12, 6)
+    );
+    const bodyCenter = new THREE.Vector3(0, 0, 0);
+
+    expect(previewFrameSize(bounds, bodyCenter)).toEqual(
+      new THREE.Vector3(44, 24, 12)
+    );
   });
 });
