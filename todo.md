@@ -1,0 +1,23 @@
+# Project TODO
+
+- [ ] Preserve and port the existing Three.js basic plush configurator, three-view contour tracing, part assembly, detail placement, GLB export, and PNG exports.
+- [x] Configure the project identity, responsive design tokens, and elegant designer-facing information architecture using the plush-studio name.
+- [x] Create the Supabase project named plush-studio and document its project reference, environments, and non-secret connection requirements.
+- [ ] Create and apply the Supabase SQL schema for organizations, members, roles, projects, plush designs, parts, design versions, assets, BOM rows, cost scenarios, factory quotes, samples, QA checklists, QA inspections, approvals, and audit events.
+- [ ] Configure Supabase Auth, row-level security policies, private storage buckets, and signed-file access for project-scoped assets.
+- [ ] Configure Vercel project plush-studio with GitHub import, Preview and Production environment separation, and non-secret deployment documentation.
+- [ ] Implement authenticated workspace navigation and role-aware access for brand administrators, designers, factories, and QC users.
+- [ ] Implement project lifecycle states: draft, internal review, factory quote request, sample review, purchase order confirmed, and production QA.
+- [ ] Implement persistent design projects, plush profiles, part specifications, design-version snapshots, approvals, and frozen-version safeguards.
+- [ ] Implement BOM editing with part IDs, measurements, materials, fabric, trims, embroidery, packaging, processes, tolerances, and MOQ fields.
+- [x] Implement a deterministic cost and quotation simulator using size, part count, material, embroidery, trims, sewing complexity, MOQ, packaging, logistics, exchange rate, and target margin inputs.
+- [ ] Implement factory quote comparison, threaded image and part feedback, sample photo records, QA checklist and issue-resolution workflow.
+- [ ] Implement secure upload metadata and download paths for reference images, part images, GLB, PNG, PDF, and XLSX outputs.
+- [x] Implement Tech Pack PDF/XLSX export containing active version, BOM, dimensions, materials, construction notes, tolerances, and QA criteria.
+- [x] Add graceful WebGL and file-operation error handling, empty/loading states, and an accessible mobile-first responsive UI.
+- [ ] Add unit tests for permissions, lifecycle transitions, quote/cost calculations, BOM validation, and export payload validation.
+- [ ] Add GitHub workflow, database migration log, deployed commit record, system architecture, operator runbook, and Vercel/Supabase hand-off documents.
+- [ ] Run TypeScript validation, unit tests, desktop and mobile visual review, database security checks, Preview deployment validation, and Production deployment validation.
+- [ ] Document explicit Supabase and Vercel Development, Preview, and Production environment mappings without storing secret values.
+- [ ] Add active-version, construction notes, and QA criteria payloads to both Tech Pack PDF and XLSX exports.
+- [ ] Add user-facing failure and loading states for GLB/PDF/XLSX exports and cloud saves, plus empty states for key data flows.
