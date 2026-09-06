@@ -1,0 +1,97 @@
+.at-auth-backdrop {
+  align-items: center;
+  background: color-mix(in oklab, var(--foreground) 32%, transparent);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 50;
+}
+
+.at-auth-gate {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  color: var(--card-foreground);
+  max-inline-size: 32rem;
+  padding: 1.5rem;
+  position: relative;
+  inline-size: min(100%, 32rem);
+}
+
+.at-auth-gate form,
+.at-auth-confirmed {
+  display: grid;
+  gap: 1rem;
+}
+
+.at-auth-gate h2 {
+  font-family: var(--font-display, inherit);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.at-auth-gate p {
+  color: var(--muted-foreground);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.at-auth-close {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--muted-foreground);
+  display: inline-flex;
+  inset-block-start: 0.75rem;
+  inset-inline-end: 0.75rem;
+  justify-content: center;
+  min-block-size: 2.75rem;
+  min-inline-size: 2.75rem;
+  position: absolute;
+}
+
+.at-auth-kicker {
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.at-auth-email-field {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 0.25rem);
+  display: flex;
+  gap: 0.5rem;
+  padding-inline: 0.75rem;
+}
+
+.at-auth-email-field input {
+  background: transparent;
+  border: 0;
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  outline: none;
+}
+
+.at-auth-confirmed > svg {
+  color: var(--primary);
+}
+
+@media (max-width: 40rem) {
+  .at-auth-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .at-auth-gate {
+    border-end-end-radius: 0;
+    border-end-start-radius: 0;
+    inline-size: 100%;
+    max-inline-size: none;
+  }
+}

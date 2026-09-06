@@ -111,9 +111,25 @@ export function ProductSettingsPanel({
   );
 }
 
-export function DesignProofPanel({ project, onMessage }: { project: Project; onMessage: (message: string) => void }) {
+export function DesignProofPanel({
+  project,
+  onMessage,
+  authenticated,
+  onRequireAuthentication,
+  onProtectedExport,
+}: {
+  project: Project;
+  onMessage: (message: string) => void;
+  authenticated: boolean;
+  onRequireAuthentication: (artifact: "Design Proof PDF" | "Design Proof JSON") => void;
+  onProtectedExport: (artifact: "Design Proof PDF" | "Design Proof JSON") => void;
+}) {
   const proof = buildDesignProof(project);
   const download = () => {
+    if (!authenticated) {
+      onRequireAuthentication("Design Proof JSON");
+      return;
+    }
     const blob = new Blob([JSON.stringify(proof, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -121,7 +137,16 @@ export function DesignProofPanel({ project, onMessage }: { project: Project; onM
     anchor.download = `${project.name}-design-proof.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+    onProtectedExport("Design Proof JSON");
     onMessage("Design Proof JSON을 저장했습니다. PNG·GLB와 함께 전달해 주세요.");
+  };
+  const printProof = () => {
+    if (!authenticated) {
+      onRequireAuthentication("Design Proof PDF");
+      return;
+    }
+    onProtectedExport("Design Proof PDF");
+    window.print();
   };
   const statusLabel = proof.status === "DESIGN_READY" ? "Design Ready" : proof.status === "CONCEPT" ? "Concept · 보완 권장" : "Review Required";
   return (
@@ -196,7 +221,7 @@ export function DesignProofPanel({ project, onMessage }: { project: Project; onM
       </div>
       <p className="at-proof-disclaimer">{proof.disclaimer}</p>
       <div className="at-proof-actions">
-        <button onClick={() => window.print()}><FileText size={16} /> 인쇄 · PDF 저장</button>
+        <button onClick={printProof}><FileText size={16} /> 인쇄 · PDF 저장</button>
         <button className="at-primary" onClick={download}><Download size={16} /> Proof JSON 저장</button>
       </div>
     </section>

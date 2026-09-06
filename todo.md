@@ -20,9 +20,9 @@
 - [ ] Run TypeScript validation, unit tests, desktop and mobile visual review, database security checks, Preview deployment validation, and Production deployment validation.
 - [x] Document explicit Supabase and Vercel Development, Preview, and Production environment mappings without storing secret values.
 - [ ] Configure distinct Vercel Preview and Production Supabase targets, then verify a Preview deployment does not write to production manufacturing data.
-- [ ] Update the operations runbook with the final, applied Preview and Production branch-to-database mapping after the staging Supabase project exists.
-- [ ] Create the approved `plush-studio-staging` Supabase project in Seoul and apply the version-controlled migration set without copying Production data.
-- [ ] Trigger and verify a Vercel Preview deployment sourced from the existing `staging` GitHub branch, then verify its Supabase Config points to plush-studio-staging without altering Production settings.
+- [x] Update the operations runbook with the final, applied Preview and Production branch-to-database mapping after the staging Supabase project exists.
+- [x] Create the approved `plush-studio-staging` Supabase project in Seoul and apply the version-controlled migration set without copying Production data.
+- [x] Trigger and verify a Vercel Preview deployment sourced from the existing `staging` GitHub branch and bind its public Supabase Config to plush-studio-staging without altering Production settings.
 - [ ] Add active-version, construction notes, and QA criteria payloads to both Tech Pack PDF and XLSX exports.
 - [ ] Add user-facing failure and loading states for GLB/PDF/XLSX exports and cloud saves, plus empty states for key data flows.
 - [x] Add a read-only Supabase schema validation test that verifies every required collaboration table, private asset bucket, and access-control function after migrations are applied.
@@ -40,4 +40,19 @@
 - [x] Verify actual Design Proof multi-view export behavior and complete documented desktop/mobile task flows for plush, bag, and T-shirt templates, including template switch, required-reference errors, Proof state, and request blocking.
 - [ ] Rebuild and measure the manual React/UI/data vendor splits to verify that the remaining initial JavaScript payload is reduced while Product Atelier, 3D rendering, and document export dependencies remain on-demand.
 - [ ] Run authenticated staff/non-staff UAT for the applied customer-request lifecycle function; migrations, API endpoint, operator UI controls, transition audit support, and unit tests are complete.
-- [ ] Extend Product Atelier part records with BOM fabric, trim, process, and tolerance specifications; expose editable inputs and verify legacy project compatibility.
+- [x] Extend Product Atelier part records with BOM fabric, trim, process, and tolerance specifications; expose editable inputs and verify legacy project compatibility.
+- [ ] Decide and configure the external QA access policy for the protected Vercel Preview deployment without weakening Production access controls.
+- [x] Add a non-authenticated buyer trial session that keeps 3D design state locally and does not create a Supabase project, asset, quote, or production request.
+- [ ] Add Supabase email OTP authentication for buyer sign-in at the protected save and download boundary, with an accessible return-to-design flow.
+- [ ] Gate Design Proof, GLB, multi-view PNG, PDF/XLSX and persistent cloud save behind verified email authentication; record successful protected-download events without storing raw file bytes in the database.
+- [ ] Update RLS and customer-request policies so an authenticated buyer may access only their own organization-scoped data after converting a trial into a saved project.
+- [x] Define acceptance criteria and a GLB asset specification for production-grade plush, bag, and T-shirt templates: silhouette, construction pieces, UV sets, PBR maps, seams, hardware, and performance budgets.
+- [ ] Replace the current primitive-only preview templates with validated product-specific GLB base models and editable attachment points while preserving the lightweight fallback preview.
+- [ ] Add material swatch-to-PBR mapping, print/decal UV placement, stitch/seam overlays, hardware options, and side-by-side Design Proof comparison for customer-visible fidelity.
+- [ ] Establish a reference-to-3D quality gate using orthographic front/side/back alignment, dimension tolerances, construction-part mapping, and human review before a template is released to buyers.
+- [ ] Implement the reusable buyer email authentication gate across all Product Atelier cloud-save, request, proof, PNG, GLB, and complete-backup download actions.
+- [ ] Add a migration and non-sensitive download-event audit path for authenticated buyer exports; verify anonymous visitors cannot create persistent records or export deliverables.
+- [ ] Add a validated 3D template manifest that distinguishes the present Concept fallback from future production GLB assets, declares anchor points, material slots, UV print zones, proof eligibility, and mobile performance budgets. The basic level, parts, material slots, overlay, and budgets are implemented; anchors, explicit proof eligibility, and concrete UV mappings remain pending.
+- [ ] Implement a first high-fidelity Basic Bear visual prototype with layered construction-zone, seam, and material presentation while retaining the WebGL fallback path. The concept material and seam prototype is implemented; the validated GLB-grade asset remains pending.
+- [ ] Add explicit attachment-anchor metadata, proof-eligibility fields, and concrete UV print-zone mappings to each 3D template manifest.
+- [ ] Implement a true high-fidelity Basic Bear asset pipeline using a validated GLB base model or equivalent with richer seam/stitch layers, documented fallback behavior, and measurable acceptance checks.

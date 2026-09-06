@@ -5,8 +5,11 @@ import { DecalGeometry } from "three/examples/jsm/geometries/DecalGeometry.js";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { productGeometry, partGeometry } from "./geometry";
 import { outlines, type Project } from "./project";
-import { materialAppearance, resolveTemplateParts } from "./productDefinition";
+import { materialAppearance, resolveTemplateParts, visualTemplateProfile } from "./productDefinition";
 import { buildDesignProof, buildProofExportPlan } from "./designProof";
+import type { ProtectedArtifact } from "./buyerAccess";
+
+const BASIC_BEAR_FABRIC_TEXTURE = "/manus-storage/basic-bear-plush-fabric-texture_d4de02c5.png";
 export function saveBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob),
     a = document.createElement("a");
@@ -34,12 +37,60 @@ function dispose(root: THREE.Object3D) {
     }
   });
 }
+function previewMaterial(color: string, materialName: string) {
+  const base = materialAppearance(materialName);
+  return new THREE.MeshPhysicalMaterial({
+    color,
+    roughness: base.roughness,
+    metalness: base.metalness,
+    clearcoat: materialName === "nylon" ? 0.12 : 0,
+    clearcoatRoughness: materialName === "nylon" ? 0.38 : 0,
+    sheen: materialName === "minky" || materialName === "velboa" ? 0.22 : 0,
+    sheenRoughness: materialName === "minky" || materialName === "velboa" ? 0.75 : 1,
+  });
+}
+function addBearConstructionOverlay(root: THREE.Group, project: Project) {
+  if (project.templateId !== "bear") return;
+  const z = project.depth / 2 + 0.14;
+  const lineMaterial = new THREE.LineBasicMaterial({
+    color: "#785c48",
+    transparent: true,
+    opacity: 0.55,
+  });
+  const center = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, project.height * 0.32, z),
+    new THREE.Vector3(0, -project.height * 0.4, z),
+  ]);
+  const belly = new THREE.EllipseCurve(
+    0,
+    -project.height * 0.06,
+    project.width * 0.23,
+    project.height * 0.3,
+    0,
+    Math.PI * 2,
+    false,
+    0
+  )
+    .getPoints(36)
+    .map(point => new THREE.Vector3(point.x, point.y, z));
+  const group = new THREE.Group();
+  group.name = "SEAM_center";
+  group.add(new THREE.Line(center, lineMaterial));
+  group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(belly), lineMaterial.clone()));
+  root.add(group);
+}
 export function ProductPreview({
   project: p,
   onMessage,
+  authenticated,
+  onRequireAuthentication,
+  onProtectedExport,
 }: {
   project: Project;
   onMessage: (s: string) => void;
+  authenticated: boolean;
+  onRequireAuthentication: (artifact: ProtectedArtifact) => void;
+  onProtectedExport: (artifact: Exclude<ProtectedArtifact, "클라우드 저장" | "제작 견적 요청" | "Design Proof PDF" | "Design Proof JSON">) => void;
 }) {
   const host = useRef<HTMLDivElement>(null),
     svg = useRef<SVGSVGElement>(null),
@@ -129,7 +180,7 @@ export function ProductPreview({
       e.scene.add(root);
       const body = new THREE.Mesh(
         geometry,
-        new THREE.MeshStandardMaterial({ color: p.color, ...materialAppearance(p.materials.body) })
+        previewMaterial(p.color, p.materials.body)
       );
       body.name = "Main body";
       root.add(body);
@@ -141,7 +192,7 @@ export function ProductPreview({
       }).forEach(part => {
         const mesh = new THREE.Mesh(
           partGeometry(part),
-          new THREE.MeshStandardMaterial({ color: part.color, ...materialAppearance(p.materials[part.materialSlot ?? "body"]) })
+          previewMaterial(part.color, p.materials[part.materialSlot ?? "body"])
         );
         mesh.name = part.name;
         mesh.userData.partId = part.id;
@@ -158,9 +209,40 @@ export function ProductPreview({
           g.add(mesh);
         } else root.add(mesh);
       });
+      addBearConstructionOverlay(root, p);
       root.updateMatrixWorld(true);
-      setTexturesReady(p.decals.length === 0);
-      let pending = p.decals.length;
+      const needsBearFabric = p.templateId === "bear";
+      setTexturesReady(p.decals.length === 0 && !needsBearFabric);
+      let pending = p.decals.length + (needsBearFabric ? 1 : 0);
+      if (needsBearFabric) {
+        new THREE.TextureLoader().load(
+          BASIC_BEAR_FABRIC_TEXTURE,
+          texture => {
+            if (cancelled) {
+              texture.dispose();
+              return;
+            }
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(2.6, 2.6);
+            const material = body.material;
+            if (material instanceof THREE.MeshPhysicalMaterial) {
+              material.map = texture;
+              material.needsUpdate = true;
+            } else {
+              texture.dispose();
+            }
+            if (--pending === 0) setTexturesReady(true);
+          },
+          undefined,
+          () => {
+            if (cancelled) return;
+            onMessage("플러시 원단 텍스처를 불러오지 못해 개념 재질로 표시합니다.");
+            if (--pending === 0) setTexturesReady(true);
+          }
+        );
+      }
       p.decals.forEach(decal => {
         const asset = p.assets.find(a => a.id === decal.assetId);
         if (!asset?.data) {
@@ -238,15 +320,21 @@ export function ProductPreview({
     e.controls.update();
   }, [view, p.width, p.height, p.depth]);
   const png = async () => {
+    if (!authenticated) {
+      onRequireAuthentication("완성 미리보기 PNG");
+      return;
+    }
     try {
       if (engine.current && !unsupported) {
         engine.current.renderer.render(
           engine.current.scene,
           engine.current.camera
         );
-        engine.current.renderer.domElement.toBlob(
-          b => b && saveBlob(b, `${p.name}-preview.png`)
-        );
+        engine.current.renderer.domElement.toBlob(b => {
+          if (!b) return;
+          saveBlob(b, `${p.name}-preview.png`);
+          onProtectedExport("완성 미리보기 PNG");
+        });
         return;
       }
       if (!svg.current) return;
@@ -263,7 +351,11 @@ export function ProductPreview({
         canvas.width = 1000;
         canvas.height = 1000;
         canvas.getContext("2d")!.drawImage(img, 0, 0, 1000, 1000);
-        canvas.toBlob(b => b && saveBlob(b, `${p.name}-2D-preview.png`));
+        canvas.toBlob(b => {
+          if (!b) return;
+          saveBlob(b, `${p.name}-2D-preview.png`);
+          onProtectedExport("완성 미리보기 PNG");
+        });
       } finally {
         URL.revokeObjectURL(url);
       }
@@ -272,6 +364,10 @@ export function ProductPreview({
     }
   };
   const glb = async () => {
+    if (!authenticated) {
+      onRequireAuthentication("부위 분리 GLB");
+      return;
+    }
     if (!engine.current?.root) return;
     setExporting(true);
     try {
@@ -285,6 +381,7 @@ export function ProductPreview({
         new Blob([result as ArrayBuffer], { type: "model/gltf-binary" }),
         `${p.name}.glb`
       );
+      onProtectedExport("부위 분리 GLB");
     } catch {
       onMessage("3D 파일 내보내기에 실패했습니다.");
     } finally {
@@ -292,6 +389,10 @@ export function ProductPreview({
     }
   };
   const proofViews = async () => {
+    if (!authenticated) {
+      onRequireAuthentication("Design Proof 3면 PNG");
+      return;
+    }
     const e = engine.current;
     if (!e || unsupported || !texturesReady) return;
     setExporting(true);
@@ -312,6 +413,7 @@ export function ProductPreview({
         if (!blob) throw Error("이미지 출력을 만들지 못했습니다.");
         saveBlob(blob, exportPlan.files[index]!.filename);
       }
+      onProtectedExport("Design Proof 3면 PNG");
       onMessage("Design Proof용 정면·옆면·뒷면 PNG 3장을 저장했습니다.");
     } catch {
       onMessage("Design Proof용 뷰 패키지를 내보내지 못했습니다.");
@@ -339,7 +441,7 @@ export function ProductPreview({
   return (
     <section className="at-preview">
       <div className="at-preview-label">
-        {unsupported ? "2D 정면 미리보기" : "편집 가능한 3D"}{" "}
+        {unsupported ? "2D 정면 미리보기" : visualTemplateProfile(p.templateId!).displayLabel}{" "}
         <span>
           {p.width} × {p.height} × {p.depth} cm
         </span>
@@ -442,6 +544,9 @@ export function ProductPreview({
         {unsupported
           ? "이 브라우저는 WebGL을 지원하지 않아 2D로 표시합니다. 3D 회전·GLB는 WebGL 지원 기기에서 이용하세요."
           : "드래그로 회전 · 스크롤로 확대. 원단 주름·봉제선은 재현하지 않는 형태 검토 모델입니다."}
+      </p>
+      <p className="at-preview-note at-preview-fidelity">
+        {visualTemplateProfile(p.templateId!).description}
       </p>
       <div className="at-view-buttons">
         <button onClick={png} disabled={!!error || !texturesReady}>

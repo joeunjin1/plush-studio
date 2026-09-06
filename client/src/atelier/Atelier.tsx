@@ -29,6 +29,13 @@ import {
   hydrate,
 } from "./storage";
 import { ProductPreview, saveBlob } from "./ProductPreview";
+import { BuyerAuthGate } from "./BuyerAuthGate";
+import {
+  buyerAccessPrompt,
+  recordBuyerDownload,
+  type ProtectedArtifact,
+  useBuyerSession,
+} from "./buyerAccess";
 import { extractOutline } from "./autoOutline";
 import { OutlineEditor } from "./OutlineEditor";
 import "./atelier.css";
@@ -71,12 +78,14 @@ export default function Atelier() {
       quantity: 100,
       consent: false,
     }),
-    [receipt, setReceipt] = useState("");
+    [receipt, setReceipt] = useState(""),
+    [protectedArtifact, setProtectedArtifact] = useState<ProtectedArtifact | null>(null);
   const operation = useRef(false),
     requestId = useRef(newRequestId()),
     dirty = useRef(false);
   const current = useRef(p);
   current.current = p;
+  const { user: buyer } = useBuyerSession();
   useEffect(() => {
     const leave = (e: BeforeUnloadEvent) => {
       if (dirty.current) {
@@ -128,6 +137,21 @@ export default function Atelier() {
       operation.current = false;
       setBusy(false);
     }
+  };
+  const requireBuyer = (artifact: ProtectedArtifact, action?: () => Promise<void>) => {
+    if (!buyer) {
+      setProtectedArtifact(artifact);
+      setMessage(buyerAccessPrompt(artifact));
+      return;
+    }
+    if (action) void run(action);
+  };
+  const recordExport = (
+    artifact: Exclude<ProtectedArtifact, "클라우드 저장" | "제작 견적 요청">
+  ) => {
+    void recordBuyerDownload(artifact, p.id, p.revision).catch(() => {
+      setMessage("파일은 저장됐지만 다운로드 기록을 남기지 못했습니다.");
+    });
   };
   const backupCurrent = async () => {
     if (dirty.current) {
@@ -232,8 +256,13 @@ export default function Atelier() {
         : Array.from(new Set([...old, ...ids]))
     );
   };
-  const submit = () =>
-    run(async () => {
+  const submit = () => {
+    if (!buyer) {
+      setProtectedArtifact("제작 견적 요청");
+      setMessage(buyerAccessPrompt("제작 견적 요청"));
+      return;
+    }
+    void run(async () => {
       if (!supabase) throw Error("온라인 접수 연결이 필요합니다.");
       const eligibility = productionRequestEligibility(p);
       if (!eligibility.eligible)
@@ -270,6 +299,7 @@ export default function Atelier() {
         "제작 견적 요청이 접수되었습니다. 내 제작 요청에서 확인하세요."
       );
     });
+  };
   return (
     <div className="atelier" onClickCapture={e => {
       const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href^="#"]');
@@ -278,6 +308,13 @@ export default function Atelier() {
       const destination = link.getAttribute("href")!;
       run(async () => { await backupCurrent(); window.location.hash = destination; });
     }}>
+      <BuyerAuthGate
+        artifact={protectedArtifact}
+        onClose={() => setProtectedArtifact(null)}
+        onMessage={setMessage}
+        open={Boolean(protectedArtifact)}
+        user={buyer}
+      />
       <header className="at-header">
         <a href="#design">
           <ArrowLeft size={17} /> 제품 만들기
@@ -336,7 +373,7 @@ export default function Atelier() {
           <button
             className="at-primary"
             onClick={() =>
-              run(async () => {
+              requireBuyer("클라우드 저장", async () => {
                 const saved = await saveCloud(p);
                 setP(saved);
                 dirty.current = false;
@@ -921,7 +958,15 @@ export default function Atelier() {
                   ))}
               </>
             )}
-            {tab === "proof" && <DesignProofPanel project={p} onMessage={setMessage} />}
+            {tab === "proof" && (
+              <DesignProofPanel
+                authenticated={Boolean(buyer)}
+                onMessage={setMessage}
+                onProtectedExport={recordExport}
+                onRequireAuthentication={artifact => requireBuyer(artifact)}
+                project={p}
+              />
+            )}
             {tab === "request" && (
               <>
                 <h2>디자인을 고정하고 제작 요청</h2>
@@ -1018,11 +1063,21 @@ export default function Atelier() {
             </section>
           )}
           <aside>
-            <ProductPreview project={p} onMessage={setMessage} />
+            <ProductPreview
+              authenticated={Boolean(buyer)}
+              onMessage={setMessage}
+              onProtectedExport={recordExport}
+              onRequireAuthentication={artifact => requireBuyer(artifact)}
+              project={p}
+            />
             <div className="at-backups">
               <button
                 disabled={busy}
                 onClick={() => {
+                  if (!buyer) {
+                    requireBuyer("전체 백업 JSON");
+                    return;
+                  }
                   try {
                     parseProject(p);
                     saveBlob(
@@ -1034,6 +1089,7 @@ export default function Atelier() {
                     setMessage(
                       "이미지와 부위가 포함된 전체 백업을 저장했습니다."
                     );
+                    recordExport("전체 백업 JSON");
                   } catch {
                     setMessage("이름과 윤곽을 확인한 후 저장해 주세요.");
                   }
@@ -1122,7 +1178,7 @@ export default function Atelier() {
             <button
               disabled={busy}
               onClick={() =>
-                run(async () => {
+                requireBuyer("클라우드 저장", async () => {
                   setCloud(await listCloud());
                   setMessage("로그인한 계정의 클라우드 작업입니다.");
                 })

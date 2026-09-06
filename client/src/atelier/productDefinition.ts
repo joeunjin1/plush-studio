@@ -68,6 +68,31 @@ export type ProductDefinition = {
   requiredKinds: string[];
   parts: TemplatePart[];
 };
+export type VisualTemplateProfile = {
+  level: "concept" | "prototype" | "validated";
+  displayLabel: string;
+  description: string;
+  glbAssetKey?: string;
+  requiredNodes: string[];
+  materialSlots: string[];
+  printZoneMode: "procedural" | "uv-locked";
+  proofEligibility: "exploratory" | "buyer-review" | "factory-release";
+  attachmentAnchors: Array<{
+    id: string;
+    label: string;
+    node: string;
+    allowed: Array<"decal" | "embroidery" | "hardware" | "accessory">;
+    position: [number, number, number];
+  }>;
+  uvPrintZones: Array<{
+    id: string;
+    meshNode: string;
+    face: "front" | "back";
+    uv: { uMin: number; vMin: number; uMax: number; vMax: number };
+  }>;
+  constructionOverlay: "none" | "key-seams" | "mapped-seams";
+  performanceBudget: { mobileMb: number; desktopMb: number; mobileFps: number; textureResolution: number };
+};
 export type ReadinessIssue = {
   code: string;
   level: "error" | "warning" | "info";
@@ -224,6 +249,59 @@ export function materialAppearance(value: string | undefined) {
   if (value === "minky" || value === "velboa") return { roughness: 0.72, metalness: 0 };
   if (value === "cotton") return { roughness: 0.86, metalness: 0 };
   return { roughness: 0.64, metalness: 0 };
+}
+export function visualTemplateProfile(templateId: TemplateId): VisualTemplateProfile {
+  const template = getTemplate(templateId);
+  const printZones = template.printZones.map(zone => ({
+    id: zone.id,
+    meshNode: "PART_body",
+    face: zone.face,
+    uv: {
+      uMin: Number((0.5 - zone.widthRatio / 2).toFixed(3)),
+      vMin: Number((0.5 - zone.heightRatio / 2 + zone.yRatio).toFixed(3)),
+      uMax: Number((0.5 + zone.widthRatio / 2).toFixed(3)),
+      vMax: Number((0.5 + zone.heightRatio / 2 + zone.yRatio).toFixed(3)),
+    },
+  }));
+  if (templateId === "bear") {
+    return {
+      level: "prototype",
+      displayLabel: "Prototype 3D · 구조/소재 검토",
+      description: "베이직 베어의 주요 구성과 봉제 기준선을 보여주는 시각 프로토타입입니다. 실제 샘플의 파일 길이, 봉제 밀도와 색상은 Factory Review에서 확정합니다.",
+      requiredNodes: ["PART_body", "PART_ear_left", "PART_ear_right", "PART_arm_left", "PART_arm_right", "PART_leg_left", "PART_leg_right", "SEAM_center"],
+      materialSlots: ["body", "accent", "embroidery"],
+      printZoneMode: "procedural",
+      proofEligibility: "buyer-review",
+      attachmentAnchors: [
+        { id: "front-graphic", label: "정면 그래픽", node: "PART_body", allowed: ["decal", "embroidery"], position: [0, 0.8, 7.65] },
+        { id: "neck-accessory", label: "목 장식", node: "PART_body", allowed: ["accessory"], position: [0, 3.1, 6.5] },
+      ],
+      uvPrintZones: printZones,
+      constructionOverlay: "key-seams",
+      performanceBudget: { mobileMb: 3, desktopMb: 8, mobileFps: 30, textureResolution: 2048 },
+    };
+  }
+  return {
+    level: "concept",
+    displayLabel: "Concept 3D · 구성/치수 검토",
+    description: `${template.label}의 구성, 치수, 소재 슬롯과 그래픽 위치를 검토하는 경량 모델입니다. 실제 패턴, 원단 처짐, 하드웨어와 봉제 사양은 Factory Review에서 확정합니다.`,
+    requiredNodes: template.parts.map(part => `PART_${part.kind}`),
+    materialSlots: template.materialSlots.map(slot => slot.id),
+    printZoneMode: "procedural",
+    proofEligibility: "exploratory",
+    attachmentAnchors: [
+      {
+        id: "front-graphic",
+        label: "정면 그래픽",
+        node: "PART_body",
+        allowed: ["decal", "embroidery"],
+        position: [0, 0, template.dimensions.depth / 2],
+      },
+    ],
+    uvPrintZones: printZones,
+    constructionOverlay: "none",
+    performanceBudget: { mobileMb: 3, desktopMb: 6, mobileFps: 30, textureResolution: 1024 },
+  };
 }
 export function resolveTemplateParts<T extends { kind?: string; name: string; width: number; height: number; rotation: number; y: number }>(project: {
   templateId: TemplateId;
