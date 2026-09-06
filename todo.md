@@ -60,3 +60,4 @@
 - [x] Re-verify the Product Atelier header at a narrow 320px mobile width and use a readable Korean wrapping rule that cannot clip the headline.
 - [x] Add a focused responsive regression check for the Atelier header/action area so title layout and preview dominance remain stable after future CSS changes.
 - [x] Extend the narrow-mobile responsive regression test with explicit preview ordering and canvas-size assertions.
+- [ ] Restore authorized GitHub staging write access, push verified commit `03ae784` to `staging`, and verify the resulting protected Vercel Preview without publishing to Production.
