@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import CustomerStudio from "./pages/CustomerStudio";
 
 // NOTE: About Theme
 // - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
@@ -18,7 +18,7 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <Home />
+          <CustomerStudio />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
