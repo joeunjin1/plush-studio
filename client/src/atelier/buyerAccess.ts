@@ -20,32 +20,54 @@ export function buyerAccessPrompt(artifact: ProtectedArtifact) {
   return `${artifact}은 이메일 인증 후 이용할 수 있습니다. 지금까지의 체험 디자인은 이 기기에 유지됩니다.`;
 }
 
+const buyerDownloadArtifactTypes = {
+  "완성 미리보기 PNG": "preview_png",
+  "Design Proof 3면 PNG": "proof_png_3view",
+  "부위 분리 GLB": "parted_glb",
+  "Design Proof PDF": "proof_pdf",
+  "Design Proof JSON": "proof_json",
+  "전체 백업 JSON": "full_backup_json",
+} as const;
+
+export function buyerDownloadArtifactType(
+  artifact: Exclude<ProtectedArtifact, "클라우드 저장" | "제작 견적 요청">
+) {
+  return buyerDownloadArtifactTypes[artifact];
+}
+
+export const buyerDownloadAuditFailureMessage =
+  "파일은 저장됐지만 다운로드 기록을 남기지 못했습니다.";
+
+export async function completeBuyerDownloadAudit(
+  record: () => Promise<void>
+) {
+  try {
+    await record();
+    return { recorded: true as const };
+  } catch {
+    return { recorded: false as const, message: buyerDownloadAuditFailureMessage };
+  }
+}
+
 export async function recordBuyerDownload(
   artifact: Exclude<ProtectedArtifact, "클라우드 저장" | "제작 견적 요청">,
   projectId: string,
   revision: number
 ) {
-  if (!supabase) return;
+  if (!supabase) throw Error("다운로드 기록 연결을 준비하지 못했습니다.");
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
-  const types = {
-    "완성 미리보기 PNG": "preview_png",
-    "Design Proof 3면 PNG": "proof_png_3view",
-    "부위 분리 GLB": "parted_glb",
-    "Design Proof PDF": "proof_pdf",
-    "Design Proof JSON": "proof_json",
-    "전체 백업 JSON": "full_backup_json",
-  } as const;
-  await supabase
+  if (!user) throw Error("다운로드 기록을 남기려면 이메일 로그인이 필요합니다.");
+  const { error } = await supabase
     .from("buyer_download_events")
     .insert({
       user_id: user.id,
       project_id: projectId,
       project_revision: revision,
-      artifact_type: types[artifact],
+      artifact_type: buyerDownloadArtifactType(artifact),
     });
+  if (error) throw Error("다운로드 기록을 남기지 못했습니다.");
 }
 
 export function useBuyerSession() {

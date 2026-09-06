@@ -156,7 +156,7 @@ export function ProductPreview({
   onMessage: (s: string) => void;
   authenticated: boolean;
   onRequireAuthentication: (artifact: ProtectedArtifact) => void;
-  onProtectedExport: (artifact: Exclude<ProtectedArtifact, "클라우드 저장" | "제작 견적 요청" | "Design Proof PDF" | "Design Proof JSON">) => void;
+  onProtectedExport: (artifact: Exclude<ProtectedArtifact, "클라우드 저장" | "제작 견적 요청" | "Design Proof PDF" | "Design Proof JSON">) => Promise<boolean>;
 }) {
   const host = useRef<HTMLDivElement>(null),
     svg = useRef<SVGSVGElement>(null),
@@ -379,7 +379,9 @@ export function ProductPreview({
         engine.current.renderer.domElement.toBlob(b => {
           if (!b) return;
           saveBlob(b, `${p.name}-preview.png`);
-          onProtectedExport("완성 미리보기 PNG");
+          void onProtectedExport("완성 미리보기 PNG").then(recorded => {
+            if (recorded) onMessage("완성 미리보기 PNG를 저장했습니다.");
+          });
         });
         return;
       }
@@ -400,7 +402,9 @@ export function ProductPreview({
         canvas.toBlob(b => {
           if (!b) return;
           saveBlob(b, `${p.name}-2D-preview.png`);
-          onProtectedExport("완성 미리보기 PNG");
+          void onProtectedExport("완성 미리보기 PNG").then(recorded => {
+            if (recorded) onMessage("완성 미리보기 PNG를 저장했습니다.");
+          });
         });
       } finally {
         URL.revokeObjectURL(url);
@@ -427,7 +431,8 @@ export function ProductPreview({
         new Blob([result as ArrayBuffer], { type: "model/gltf-binary" }),
         `${p.name}.glb`
       );
-      onProtectedExport("부위 분리 GLB");
+      if (await onProtectedExport("부위 분리 GLB"))
+        onMessage("부위 분리 GLB를 저장했습니다.");
     } catch {
       onMessage("3D 파일 내보내기에 실패했습니다.");
     } finally {
@@ -457,7 +462,7 @@ export function ProductPreview({
         if (!blob) throw Error("이미지 출력을 만들지 못했습니다.");
         saveBlob(blob, exportPlan.files[index]!.filename);
       }
-      onProtectedExport("Design Proof 3면 PNG");
+      if (!(await onProtectedExport("Design Proof 3면 PNG"))) return;
       onMessage("Design Proof용 정면·옆면·뒷면 PNG 3장을 저장했습니다.");
     } catch {
       onMessage("Design Proof용 뷰 패키지를 내보내지 못했습니다.");

@@ -32,6 +32,7 @@ import { ProductPreview, saveBlob } from "./ProductPreview";
 import { BuyerAuthGate } from "./BuyerAuthGate";
 import {
   buyerAccessPrompt,
+  completeBuyerDownloadAudit,
   recordBuyerDownload,
   type ProtectedArtifact,
   useBuyerSession,
@@ -149,8 +150,11 @@ export default function Atelier() {
   const recordExport = (
     artifact: Exclude<ProtectedArtifact, "클라우드 저장" | "제작 견적 요청">
   ) => {
-    void recordBuyerDownload(artifact, p.id, p.revision).catch(() => {
-      setMessage("파일은 저장됐지만 다운로드 기록을 남기지 못했습니다.");
+    return completeBuyerDownloadAudit(() =>
+      recordBuyerDownload(artifact, p.id, p.revision)
+    ).then(result => {
+      if (!result.recorded) setMessage(result.message);
+      return result.recorded;
     });
   };
   const backupCurrent = async () => {
@@ -1086,10 +1090,12 @@ export default function Atelier() {
                       }),
                       `${p.name}-complete.json`
                     );
-                    setMessage(
-                      "이미지와 부위가 포함된 전체 백업을 저장했습니다."
-                    );
-                    recordExport("전체 백업 JSON");
+                    void recordExport("전체 백업 JSON").then(recorded => {
+                      if (recorded)
+                        setMessage(
+                          "이미지와 부위가 포함된 전체 백업을 저장했습니다."
+                        );
+                    });
                   } catch {
                     setMessage("이름과 윤곽을 확인한 후 저장해 주세요.");
                   }

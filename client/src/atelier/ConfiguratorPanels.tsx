@@ -122,10 +122,10 @@ export function DesignProofPanel({
   onMessage: (message: string) => void;
   authenticated: boolean;
   onRequireAuthentication: (artifact: "Design Proof PDF" | "Design Proof JSON") => void;
-  onProtectedExport: (artifact: "Design Proof PDF" | "Design Proof JSON") => void;
+  onProtectedExport: (artifact: "Design Proof PDF" | "Design Proof JSON") => Promise<boolean>;
 }) {
   const proof = buildDesignProof(project);
-  const download = () => {
+  const download = async () => {
     if (!authenticated) {
       onRequireAuthentication("Design Proof JSON");
       return;
@@ -137,16 +137,15 @@ export function DesignProofPanel({
     anchor.download = `${project.name}-design-proof.json`;
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    onProtectedExport("Design Proof JSON");
-    onMessage("Design Proof JSON을 저장했습니다. PNG·GLB와 함께 전달해 주세요.");
+    if (await onProtectedExport("Design Proof JSON"))
+      onMessage("Design Proof JSON을 저장했습니다. PNG·GLB와 함께 전달해 주세요.");
   };
-  const printProof = () => {
+  const printProof = async () => {
     if (!authenticated) {
       onRequireAuthentication("Design Proof PDF");
       return;
     }
-    onProtectedExport("Design Proof PDF");
-    window.print();
+    if (await onProtectedExport("Design Proof PDF")) window.print();
   };
   const statusLabel = proof.status === "DESIGN_READY" ? "Design Ready" : proof.status === "CONCEPT" ? "Concept · 보완 권장" : "Review Required";
   return (

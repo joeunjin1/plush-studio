@@ -62,3 +62,7 @@
 - [x] Extend the narrow-mobile responsive regression test with explicit preview ordering and canvas-size assertions.
 - [x] Restore authorized GitHub staging write access, push verified commit `03ae784` to `staging`, and verify the resulting protected Vercel Preview without publishing to Production.
 - [x] Rebalance the desktop Product Atelier preview viewport, camera framing, descriptive overlay, and export controls so an entire configured product remains readable beside the editor without clipping.
+- [ ] Complete a staging magic-link UAT that confirms return-to-design, authenticated save/export, and exactly one metadata-only buyer_download_events audit record; then verify logout and expired-link errors.
+- [x] Make protected-export audit persistence observable and fail-safe so a download cannot be reported as fully successful when its metadata audit insert fails.
+- [x] Await the protected-export audit insert before presenting export success, and show a distinct partial-success state if the file download completes but audit persistence fails.
+- [ ] Add protected-export regression tests for audit-success and audit-failure messaging, then repeat the current staging export UAT and verify one metadata-only audit row.
