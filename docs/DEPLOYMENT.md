@@ -42,3 +42,7 @@ Run migrations in the Supabase SQL Editor in lexical filename order. Copy every 
 5. Import `joeunjin1/plush-studio` as the Vercel project named `plush-studio`, retain the `Other` preset, and use the repository `vercel.json` (`pnpm build`, `dist/public`) before adding environment variables. Confirm a Preview deployment before promoting `main`.
 6. Enable Vercel Analytics and Speed Insights. Configure Sentry separately with its server and browser DSNs before public onboarding.
 7. Test a role-specific login, a project save, asset upload, Tech Pack download, and unauthorised project access.
+
+## 2026-09-06 release record
+
+The Vercel project **`plush-studio`** was created from `joeunjin1/plush-studio` with the `Other` preset. Its first deployment completed successfully from GitHub commit `6df2c4d` (`chore: preserve legacy 3d studio source`). The deployment URL is `https://plush-studio-40pvo3jqf-joeunjin1s-projects.vercel.app`. The project is connected to the `main` branch and the baseline project URL should be checked again after Vercel finishes assigning the stable alias.
