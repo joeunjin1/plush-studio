@@ -297,7 +297,7 @@
   font-size: 10px;
 }
 .at-webgl {
-  height: 460px;
+  height: 22rem;
 }
 .at-webgl[hidden] {
   display: none;
@@ -314,8 +314,40 @@
   font-size: 11px;
   line-height: 1.7;
   color: #73836a;
-  padding: 0 23px;
+  padding: 0 1.25rem;
   text-align: center;
+}
+.at-preview-guidance {
+  margin: 0.25rem 1rem 0.85rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--at-card);
+  border: 1px solid var(--at-line);
+  border-radius: 0.75rem;
+  text-align: left;
+}
+.at-preview-fidelity {
+  margin: 0 1rem 1rem;
+  padding: 0.75rem 0.9rem;
+  background: #f8fbf5;
+  border: 1px solid var(--at-line);
+  border-radius: 0.75rem;
+}
+.at-preview-fidelity summary {
+  color: var(--at-ink);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.at-preview-fidelity p {
+  color: var(--at-muted);
+  font-size: 0.72rem;
+  line-height: 1.65;
+  margin: 0.65rem 0 0;
+}
+.at-export-actions {
+  border-top: 1px solid var(--at-line);
+  margin: 0;
+  padding: 1rem;
 }
 .at-view-buttons {
   display: flex;
@@ -900,6 +932,14 @@
     margin: 0.75rem 0;
     padding: 0 1rem;
     text-align: left;
+  }
+  .at-preview-guidance,
+  .at-preview-fidelity {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  .at-export-actions {
+    padding: 0.75rem 1rem 1rem;
   }
   .at-view-buttons {
     justify-content: flex-start;

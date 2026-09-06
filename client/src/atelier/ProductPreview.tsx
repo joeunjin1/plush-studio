@@ -50,13 +50,47 @@ export function saveBlob(blob: Blob, name: string) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function cameraPoses(distance: number): Record<"front" | "side" | "back" | "free", number[]> {
-  return {
-    front: [0, 0, distance],
-    side: [distance, 0, 0],
-    back: [0, 0, -distance],
-    free: [distance * 0.7, distance * 0.3, distance],
-  };
+type PreviewView = "front" | "side" | "back" | "free";
+
+function previewDirection(view: PreviewView) {
+  if (view === "side") return new THREE.Vector3(1, 0, 0);
+  if (view === "back") return new THREE.Vector3(0, 0, -1);
+  if (view === "free") return new THREE.Vector3(0.7, 0.3, 1).normalize();
+  return new THREE.Vector3(0, 0, 1);
+}
+
+export function previewCameraDistance(
+  size: THREE.Vector3,
+  fov: number,
+  aspect: number
+) {
+  const verticalHalfAngle = THREE.MathUtils.degToRad(fov / 2);
+  const horizontalHalfAngle = Math.atan(Math.tan(verticalHalfAngle) * Math.max(aspect, 0.1));
+  const verticalDistance = size.y / 2 / Math.tan(verticalHalfAngle);
+  const horizontalDistance = size.x / 2 / Math.tan(horizontalHalfAngle);
+  return Math.max(4, Math.max(verticalDistance, horizontalDistance) * 1.58 + size.z * 0.25);
+}
+
+function framePreview(
+  engine: {
+    camera: THREE.PerspectiveCamera;
+    controls: OrbitControls;
+    root?: THREE.Group;
+  },
+  view: PreviewView
+) {
+  if (!engine.root) return;
+  const bounds = new THREE.Box3().setFromObject(engine.root);
+  if (bounds.isEmpty()) return;
+  const center = bounds.getCenter(new THREE.Vector3());
+  const size = bounds.getSize(new THREE.Vector3());
+  const distance = previewCameraDistance(size, engine.camera.fov, engine.camera.aspect);
+  engine.camera.position.copy(center).add(previewDirection(view).multiplyScalar(distance));
+  engine.camera.near = Math.max(0.1, distance / 100);
+  engine.camera.far = Math.max(3000, distance * 20);
+  engine.camera.updateProjectionMatrix();
+  engine.controls.target.copy(center);
+  engine.controls.update();
 }
 function dispose(root: THREE.Object3D) {
   root.traverse(o => {
@@ -138,7 +172,7 @@ export function ProductPreview({
     >(undefined),
     [unsupported, setUnsupported] = useState(false),
     [error, setError] = useState(""),
-    [view, setView] = useState<"front" | "side" | "back" | "free">("front"),
+    [view, setView] = useState<PreviewView>("front"),
     [exporting, setExporting] = useState(false),
     [texturesReady, setTexturesReady] = useState(true);
   useEffect(() => {
@@ -166,12 +200,13 @@ export function ProductPreview({
     light.position.set(-50, 100, 150);
     scene.add(light);
     engine.current = { scene, camera, renderer, controls };
-    const resize = () => {
+      const resize = () => {
       const w = host.current?.clientWidth || 500,
         h = host.current?.clientHeight || 500;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        if (engine.current) framePreview(engine.current, view);
     };
     const observer = new ResizeObserver(resize);
     observer.observe(host.current);
@@ -243,6 +278,7 @@ export function ProductPreview({
       });
       addBearConstructionOverlay(root, p);
       root.updateMatrixWorld(true);
+      framePreview(e, view);
       const needsBearFabric = p.templateId === "bear";
       setTexturesReady(p.decals.length === 0 && !needsBearFabric);
       let pending = p.decals.length + (needsBearFabric ? 1 : 0);
@@ -327,12 +363,8 @@ export function ProductPreview({
   useEffect(() => {
     const e = engine.current;
     if (!e) return;
-    const distance = Math.max(p.width, p.height, p.depth) * 2.2;
-    const poses = cameraPoses(distance);
-    e.camera.position.fromArray(poses[view]);
-    e.controls.target.set(0, 0, 0);
-    e.controls.update();
-  }, [view, p.width, p.height, p.depth]);
+    framePreview(e, view);
+  }, [view, p]);
   const png = async () => {
     if (!authenticated) {
       onRequireAuthentication("완성 미리보기 PNG");
@@ -410,16 +442,14 @@ export function ProductPreview({
     const e = engine.current;
     if (!e || unsupported || !texturesReady) return;
     setExporting(true);
-    const original = e.camera.position.clone();
-    try {
-      const poses = cameraPoses(Math.max(p.width, p.height, p.depth) * 2.2);
+      const original = e.camera.position.clone();
+      const originalTarget = e.controls.target.clone();
+      try {
       const exportPlan = buildProofExportPlan(buildDesignProof(p));
       const views = ["front", "side", "back"] as const;
       for (let index = 0; index < views.length; index++) {
         const viewName = views[index]!;
-        e.camera.position.fromArray(poses[viewName]);
-        e.controls.target.set(0, 0, 0);
-        e.controls.update();
+        framePreview(e, viewName);
         e.renderer.render(e.scene, e.camera);
         const blob = await new Promise<Blob | null>(resolve =>
           e.renderer.domElement.toBlob(resolve, "image/png")
@@ -431,9 +461,10 @@ export function ProductPreview({
       onMessage("Design Proof용 정면·옆면·뒷면 PNG 3장을 저장했습니다.");
     } catch {
       onMessage("Design Proof용 뷰 패키지를 내보내지 못했습니다.");
-    } finally {
-      e.camera.position.copy(original);
-      e.controls.update();
+      } finally {
+        e.camera.position.copy(original);
+        e.controls.target.copy(originalTarget);
+        e.controls.update();
       setExporting(false);
     }
   };
@@ -554,15 +585,16 @@ export function ProductPreview({
           ))}
         </div>
       )}
-      <p className="at-preview-note">
+      <p className="at-preview-note at-preview-guidance">
         {unsupported
           ? "이 브라우저는 WebGL을 지원하지 않아 2D로 표시합니다. 3D 회전·GLB는 WebGL 지원 기기에서 이용하세요."
           : "드래그로 회전 · 스크롤로 확대. 원단 주름·봉제선은 재현하지 않는 형태 검토 모델입니다."}
       </p>
-      <p className="at-preview-note at-preview-fidelity">
-        {visualTemplateProfile(p.templateId!).description}
-      </p>
-      <div className="at-view-buttons">
+      <details className="at-preview-fidelity">
+        <summary>현재 3D 표현 범위와 제작 검토 기준</summary>
+        <p>{visualTemplateProfile(p.templateId!).description}</p>
+      </details>
+      <div className="at-view-buttons at-export-actions">
         <button onClick={png} disabled={!!error || !texturesReady}>
           완성 미리보기 PNG
         </button>

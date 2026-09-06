@@ -61,3 +61,4 @@
 - [x] Add a focused responsive regression check for the Atelier header/action area so title layout and preview dominance remain stable after future CSS changes.
 - [x] Extend the narrow-mobile responsive regression test with explicit preview ordering and canvas-size assertions.
 - [x] Restore authorized GitHub staging write access, push verified commit `03ae784` to `staging`, and verify the resulting protected Vercel Preview without publishing to Production.
+- [x] Rebalance the desktop Product Atelier preview viewport, camera framing, descriptive overlay, and export controls so an entire configured product remains readable beside the editor without clipping.
