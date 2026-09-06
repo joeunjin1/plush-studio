@@ -70,6 +70,10 @@ Variables prefixed with `VITE_` are compiled into the browser bundle by Vite. Ve
 
 ## 2026-09-06 release record
 
+GitHub staging commit `ccaee57` (`chore: track staging preview verification`) is deployed as the protected Vercel Preview `https://plush-studio-apzez7k4q-joeunjin1s-projects.vercel.app`. Vercel reported the deployment as Ready in 17 seconds and labelled it Preview from the `staging` branch. An external HTTP request receives the Vercel login page, confirming Preview protection remains active; Production was not changed.
+
+The Vercel Environment Variables screen was also reviewed after this Preview deployment. It shows a Config-scoped `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` pair for Preview limited to `staging`, plus a separate Config-scoped pair for Production. Values were not exposed or copied. This confirms the current deployment has the required environment-specific public configuration structure; authenticated data-path UAT remains required.
+
 The Vercel project **`plush-studio`** was created from `joeunjin1/plush-studio` with the `Other` preset. Its first deployment completed successfully from GitHub commit `6df2c4d` (`chore: preserve legacy 3d studio source`). Its stable production URL is `https://plush-studio.vercel.app` and its immutable first deployment URL is `https://plush-studio-40pvo3jqf-joeunjin1s-projects.vercel.app`.
 
 GitHub commit `4497954` (`fix: align default BOM with 3d plush assembly`) then passed automatically through Vercel Production deployment and is live on the stable production URL. The live page was manually checked for loading, 3D basic-form selection, and the rule-based cost simulator; the initial BOM now includes eight 3D assembly components and produces the matching baseline target price of KRW 7,600.
