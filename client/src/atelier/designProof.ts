@@ -12,6 +12,16 @@ export type DesignProof = {
   dimensions: string;
   materials: Array<{ label: string; value: string }>;
   parts: Array<{ name: string; kind: string }>;
+  bom: Array<{
+    partId: string;
+    name: string;
+    dimensions: string;
+    materialSlot: string;
+    fabric: string;
+    trims: string;
+    process: string;
+    toleranceMm: number;
+  }>;
   artworkCount: number;
   viewExports: string[];
   issues: ReturnType<typeof validateDesignReadiness>;
@@ -74,6 +84,16 @@ export function buildDesignProof(project: Project): DesignProof {
       value: slot.options.find(option => option.value === project.materials[slot.id])?.label ?? "선택 필요",
     })),
     parts: project.parts.map(part => ({ name: part.name, kind: part.kind ?? "사용자 추가 부위" })),
+    bom: project.parts.map(part => ({
+      partId: part.id,
+      name: part.name,
+      dimensions: `${part.width} × ${part.height} × ${part.depth}cm`,
+      materialSlot: part.materialSlot ?? "body",
+      fabric: part.fabric || "원단 지정",
+      trims: part.trims || "해당 없음",
+      process: part.process,
+      toleranceMm: part.toleranceMm,
+    })),
     artworkCount: project.decals.length,
     viewExports: proofViewFileNames(project.name),
     issues,

@@ -32,8 +32,14 @@ Run migrations in the Supabase SQL Editor in lexical filename order. Copy every 
 |---|---|---|---|
 | 1 | `202609060001_plush_studio_foundation.sql` | Applied manually | Creates the role-aware collaboration schema, RLS policies, private bucket, audit events, and initial functions. |
 | 2 | `202609060002_add_part_material.sql` | Applied and API-verified | Adds the factory-facing material field used by the cloud-save feature. |
+| 5 | `202609060005_customer_request_lifecycle.sql` | Applied manually | Adds staff-only sequential lifecycle transitions and protected transition notes for customer requests. |
+| 6 | `202609060006_expose_customer_request_lifecycle_rpc.sql` | Applied and API-verified | Exposes the guarded lifecycle RPC in the Data API public schema for the operator UI. |
 
 The read-only foundation verification executed successfully after migration application. It confirms all 21 required collaboration tables, the private `plush-studio` asset bucket, and these secured API RPC functions: `is_org_member`, `has_org_role`, `can_view_project`, `can_edit_project`, `can_manage_project`, `can_contribute_to_project`, `can_inspect_project`, and `is_bucket_path_member`.
+
+After applying migration 005, use the staff-only `transition_customer_request` RPC rather than direct status updates. It permits only `received → reviewing → quoted → confirmed → sample_review → production_qa → completed`, with `closed` as the controlled exit from an active stage, and records a transition note in the request event log.
+
+The public RPC endpoint and `transition_note` column were read-only verified after migration 006. Before customer onboarding, run a role-based UAT with a designated `customer_request_staff` account to confirm a real operator can advance an eligible request and that a non-staff authenticated user receives `FORBIDDEN`.
 
 ## Production release checklist
 

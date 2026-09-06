@@ -159,6 +159,31 @@ export function DesignProofPanel({ project, onMessage }: { project: Project; onM
         <b>소재 선택</b>
         <span>{proof.materials.map(material => `${material.label}: ${material.value}`).join(" · ")}</span>
       </div>
+      <details className="at-proof-bom">
+        <summary>제조용 BOM 요약 · {proof.bom.length}개 부위</summary>
+        <div className="at-proof-bom-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">부위</th>
+                <th scope="col">치수</th>
+                <th scope="col">원단·부자재</th>
+                <th scope="col">공정·오차</th>
+              </tr>
+            </thead>
+            <tbody>
+              {proof.bom.map(part => (
+                <tr key={part.partId}>
+                  <td>{part.name}</td>
+                  <td>{part.dimensions}</td>
+                  <td>{part.fabric} · {part.trims}</td>
+                  <td>{part.process} · ±{part.toleranceMm}mm</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
       <div className="at-readiness-list">
         {proof.issues.length === 0 ? (
           <p className="at-readiness-success"><CheckCircle2 size={17} /> 자동 검사 항목을 통과했습니다. 다음 단계에서 전문 검토를 요청할 수 있습니다.</p>

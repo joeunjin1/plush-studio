@@ -38,3 +38,5 @@
 - [x] Redesign the mobile 3D preview so the canvas remains dominant and view/export controls do not collapse into a narrow vertical rail.
 - [x] Verify actual Design Proof multi-view export behavior and complete documented desktop/mobile task flows for plush, bag, and T-shirt templates, including template switch, required-reference errors, Proof state, and request blocking.
 - [ ] Rebuild and measure the manual React/UI/data vendor splits to verify that the remaining initial JavaScript payload is reduced while Product Atelier, 3D rendering, and document export dependencies remain on-demand.
+- [ ] Run authenticated staff/non-staff UAT for the applied customer-request lifecycle function; migrations, API endpoint, operator UI controls, transition audit support, and unit tests are complete.
+- [ ] Extend Product Atelier part records with BOM fabric, trim, process, and tolerance specifications; expose editable inputs and verify legacy project compatibility.

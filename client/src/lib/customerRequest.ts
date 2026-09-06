@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { supabase } from "./supabase";
+import { requestStageLabels, type RequestStage } from "./requestLifecycle";
 export const customerDraftSchema = z.object({
   design: z.object({
     name: z.string().trim().min(1).max(100),
@@ -65,13 +66,7 @@ export type RequestRow = {
     name: string;
   }>;
 };
-export const statusNames: Record<string, string> = {
-  received: "접수 완료",
-  reviewing: "제작 가능 여부 검토",
-  quoted: "견적 안내",
-  confirmed: "제작 확정",
-  closed: "상담 종료",
-};
+export const statusNames: Record<string, string> = requestStageLabels;
 export async function sendCustomerRequest(
   id: string,
   draft: CustomerDraft,
@@ -137,4 +132,23 @@ export async function sendCustomerRequest(
       "접수 확인을 받지 못했습니다. 같은 버튼으로 다시 시도하면 중복 접수를 방지합니다."
     );
   return id;
+}
+
+export async function transitionCustomerRequest(
+  requestId: string,
+  toStatus: RequestStage,
+  note = ""
+) {
+  if (!supabase) throw Error("클라우드 연결 설정이 필요합니다.");
+  const { error } = await supabase.rpc("transition_customer_request", {
+    p_request_id: requestId,
+    p_to_status: toStatus,
+    p_note: note,
+  });
+  if (!error) return;
+  if (error.message.includes("INVALID_TRANSITION"))
+    throw Error("현재 단계에서는 선택한 단계로 바로 이동할 수 없습니다.");
+  if (error.message.includes("FORBIDDEN"))
+    throw Error("운영자 권한이 있는 계정으로만 진행 단계를 변경할 수 있습니다.");
+  throw Error("진행 상태를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.");
 }

@@ -3,7 +3,8 @@ import { RequestQuote } from "./RequestQuote";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { statusNames, type RequestRow } from "@/lib/customerRequest";
+import { statusNames, transitionCustomerRequest, type RequestRow } from "@/lib/customerRequest";
+import { nextRequestStages, type RequestStage } from "@/lib/requestLifecycle";
 export function RequestInbox({ user }: { user: User | null }) {
   const [allowed, setAllowed] = useState(false),
     [checked, setChecked] = useState(false),
@@ -96,44 +97,34 @@ export function RequestInbox({ user }: { user: User | null }) {
             staff
             onChange={() => setReload(r => r + 1)}
           />
-          <label className="cs-field">
-            <span>진행 상태</span>
-            <select
-              value={row.status}
-              disabled={busy === row.id}
-              onChange={async e => {
-                const status = e.target.value;
-                setBusy(row.id);
-                try {
-                  const result = await supabase!
-                    .from("customer_requests")
-                    .update({ status })
-                    .eq("id", row.id)
-                    .select("id")
-                    .single();
-                  if (result.error) setMessage("상태 변경에 실패했습니다.");
-                  else {
-                    setRows(r =>
-                      r.map(v => (v.id === row.id ? { ...v, status } : v))
-                    );
-                    setMessage("진행 상태를 저장했습니다.");
-                  }
-                } finally {
-                  setBusy("");
-                }
-              }}
-            >
-              {Object.entries(statusNames).map(([value, label]) => (
-                <option
-                  key={value}
-                  value={value}
-                  disabled={value === "confirmed" || value === "quoted"}
-                >
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="cs-field">
+            <span>진행 상태 · {statusNames[row.status] ?? row.status}</span>
+            {nextRequestStages(row.status).length ? (
+              <div className="cs-form-actions">
+                {nextRequestStages(row.status).map(status => (
+                  <button
+                    className="cs-secondary"
+                    disabled={busy === row.id}
+                    key={status}
+                    onClick={async () => {
+                      setBusy(row.id);
+                      try {
+                        await transitionCustomerRequest(row.id, status as RequestStage);
+                        setRows(rows => rows.map(item => item.id === row.id ? { ...item, status } : item));
+                        setMessage(`${statusNames[status]} 단계로 저장했습니다.`);
+                      } catch (error) {
+                        setMessage(error instanceof Error ? error.message : "상태 변경에 실패했습니다.");
+                      } finally {
+                        setBusy("");
+                      }
+                    }}
+                  >
+                    {statusNames[status]}로 이동
+                  </button>
+                ))}
+              </div>
+            ) : <p>이 요청은 종료된 상태입니다.</p>}
+          </div>
           <details>
             <summary>디자인 설정 · 참고 이미지</summary>
             <pre>{JSON.stringify(row.design, null, 2)}</pre>

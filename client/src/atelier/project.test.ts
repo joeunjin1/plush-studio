@@ -98,7 +98,16 @@ describe("three-view product workflow", () => {
         side: [],
       },
     ];
-    expect(parseProject(JSON.parse(JSON.stringify(p)))).toEqual(p);
+    expect(parseProject(JSON.parse(JSON.stringify(p)))).toEqual({
+      ...p,
+      parts: p.parts.map(part => ({
+        ...part,
+        fabric: "",
+        trims: "",
+        process: "봉제",
+        toleranceMm: 2,
+      })),
+    });
   });
   it("rejects unsafe asset URLs, missing images and malformed dimensions", () => {
     const p = createProject();

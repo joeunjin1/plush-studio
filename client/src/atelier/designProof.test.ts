@@ -9,6 +9,13 @@ describe("Design Proof", () => {
     expect(proof.proofId).toMatch(/^PS-[A-F0-9]{8}-R0$/);
     expect(proof.status).toBe("REVIEW_REQUIRED");
     expect(proof.parts.some(part => part.kind === "handle-left")).toBe(true);
+    expect(proof.bom[0]).toMatchObject({
+      partId: expect.any(String),
+      dimensions: expect.stringContaining("cm"),
+      fabric: "원단 지정",
+      process: "봉제",
+      toleranceMm: 2,
+    });
     expect(proof.viewExports).toEqual(proofViewFileNames(proof.projectName));
     expect(buildProofExportPlan(proof)).toEqual({
       proofId: proof.proofId,

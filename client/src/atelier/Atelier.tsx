@@ -695,6 +695,10 @@ export default function Atelier() {
                       rotation: 0,
                       kind: "custom-part",
                       materialSlot: "body",
+                      fabric: "원단 지정",
+                      trims: "",
+                      process: "봉제",
+                      toleranceMm: 2,
                       front: [],
                       side: [],
                     };
@@ -804,6 +808,40 @@ export default function Atelier() {
                         >
                           {getTemplate(p.templateId!).materialSlots.map(slot => <option value={slot.id} key={slot.id}>{slot.label}</option>)}
                         </select>
+                      </Field>
+                      <Field label="BOM 원단·소재">
+                        <input
+                          value={part.fabric}
+                          maxLength={80}
+                          placeholder="예: 10mm 밍크, 16수 캔버스"
+                          onChange={e => updatePart(part.id, { fabric: e.target.value })}
+                        />
+                      </Field>
+                      <Field label="BOM 부자재">
+                        <input
+                          value={part.trims}
+                          maxLength={160}
+                          placeholder="예: 5호 지퍼, D링, 자수사"
+                          onChange={e => updatePart(part.id, { trims: e.target.value })}
+                        />
+                      </Field>
+                      <Field label="BOM 공정">
+                        <input
+                          value={part.process}
+                          maxLength={160}
+                          placeholder="예: 라운드 봉제, 상침, 자수"
+                          onChange={e => updatePart(part.id, { process: e.target.value })}
+                        />
+                      </Field>
+                      <Field label="허용 오차 (mm)">
+                        <input
+                          type="number"
+                          min="0"
+                          max="50"
+                          step="0.5"
+                          value={part.toleranceMm}
+                          onChange={e => updatePart(part.id, { toleranceMm: Math.max(0, Math.min(50, Number(e.target.value))) })}
+                        />
                       </Field>
                       <Field label="부위 색상">
                         <input

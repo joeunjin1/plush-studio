@@ -721,6 +721,42 @@
   margin: 0.85rem 0;
   padding: 0.85rem;
 }
+.at-proof-bom {
+  border: 1px solid var(--at-line);
+  border-radius: 0.75rem;
+  margin: 0.85rem 0;
+  overflow: hidden;
+}
+.at-proof-bom summary {
+  background: var(--at-card);
+  color: var(--at-ink);
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.85rem;
+}
+.at-proof-bom-scroll {
+  overflow-x: auto;
+}
+.at-proof-bom table {
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  min-width: 42rem;
+  width: 100%;
+}
+.at-proof-bom th,
+.at-proof-bom td {
+  border-top: 1px solid var(--at-line);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+.at-proof-bom th {
+  background: var(--at-soft);
+  color: var(--at-muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+}
 .at-readiness-list {
   display: flex;
   flex-direction: column;
@@ -939,6 +975,9 @@
   }
   .at-template-confirm > div {
     width: 100%;
+  }
+  .at-proof-bom table {
+    min-width: 36rem;
   }
   .at-template-confirm > div > div button {
     flex: 1 1 100%;
