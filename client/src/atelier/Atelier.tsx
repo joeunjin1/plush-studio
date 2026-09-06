@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Plus, Save, Upload, Layers, Check } from "lucide-react";
+import { ArrowLeft, Plus, Save, Upload, Layers, Check, PanelLeft } from "lucide-react";
 import { newRequestId } from "@/lib/requestId";
 import { supabase } from "@/lib/supabase";
 import {
@@ -80,7 +80,8 @@ export default function Atelier() {
       consent: false,
     }),
     [receipt, setReceipt] = useState(""),
-    [protectedArtifact, setProtectedArtifact] = useState<ProtectedArtifact | null>(null);
+    [protectedArtifact, setProtectedArtifact] = useState<ProtectedArtifact | null>(null),
+    [sidebarOpen, setSidebarOpen] = useState(false);
   const operation = useRef(false),
     requestId = useRef(newRequestId()),
     dirty = useRef(false);
@@ -329,69 +330,75 @@ export default function Atelier() {
         <a href="#requests">내 제작 요청</a>
       </header>
       <main className="at-main">
-        <div className="at-title">
-          <div>
-            <p>DESIGN · PREVIEW · MAKE</p>
-            <h1>그림에서 제품으로.</h1>
-            <span>
-              인형, 가방, 티셔츠의 구조·소재·인쇄를 확인하고 Design Proof로 보관하세요.
-            </span>
-          </div>
-          <button onClick={showShelf} disabled={busy}>
-            <Layers size={16} /> 내 저장 작업
-          </button>
-        </div>
-        <fieldset disabled={busy} className="at-toolbar">
-          <div>
-            {(Object.keys(productNames) as Project["product"][]).map(
-              product => (
-                <button
-                  key={product}
-                  aria-pressed={p.product === product}
-                  onClick={() => chooseTemplate(product === "plush" ? "bear" : product === "bag" ? "tote" : "tee-regular")}
-                >
-                  {productNames[product]}
-                </button>
-              )
-            )}
-          </div>
-          <input
-            aria-label="제품 디자인 이름"
-            value={p.name}
-            maxLength={100}
-            onChange={e => edit({ name: e.target.value })}
-          />
-          <button
-            onClick={() =>
-              run(async () => {
-                await saveLocal(p);
-                dirty.current = false;
-                setMessage(
-                  "이미지·윤곽·부위를 이 기기에 저장했습니다. 내 저장 작업에서 다시 열 수 있습니다."
-                );
-              })
-            }
-          >
-            <Save size={16} /> 이 기기 저장
-          </button>
-          <button
-            className="at-primary"
-            onClick={() =>
-              requireBuyer("클라우드 저장", async () => {
-                const saved = await saveCloud(p);
-                setP(saved);
-                dirty.current = false;
-                setMessage(
-                  "계정에 저장했습니다. 다른 기기에서도 로그인 후 열 수 있습니다."
-                );
-              })
-            }
-          >
-            클라우드 저장
-          </button>
-        </fieldset>
         <div className="at-layout">
-          <fieldset disabled={busy} className="at-controls">
+          <aside
+            aria-label="제품 편집 패널"
+            className="at-workspace-sidebar"
+            data-open={sidebarOpen}
+            id="atelier-controls"
+          >
+            <div className="at-sidebar-heading">
+              <span>PRODUCT WORKSPACE</span>
+              <button
+                aria-label="편집 패널 닫기"
+                className="at-sidebar-close"
+                onClick={() => setSidebarOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <fieldset disabled={busy} className="at-toolbar">
+              <div>
+                {(Object.keys(productNames) as Project["product"][]).map(
+                  product => (
+                    <button
+                      key={product}
+                      aria-pressed={p.product === product}
+                      onClick={() => chooseTemplate(product === "plush" ? "bear" : product === "bag" ? "tote" : "tee-regular")}
+                    >
+                      {productNames[product]}
+                    </button>
+                  )
+                )}
+              </div>
+              <input
+                aria-label="제품 디자인 이름"
+                value={p.name}
+                maxLength={100}
+                onChange={e => edit({ name: e.target.value })}
+              />
+              <div className="at-save-actions">
+                <button
+                  onClick={() =>
+                    run(async () => {
+                      await saveLocal(p);
+                      dirty.current = false;
+                      setMessage(
+                        "이미지·윤곽·부위를 이 기기에 저장했습니다. 내 저장 작업에서 다시 열 수 있습니다."
+                      );
+                    })
+                  }
+                >
+                  <Save size={16} /> 이 기기 저장
+                </button>
+                <button
+                  className="at-primary"
+                  onClick={() =>
+                    requireBuyer("클라우드 저장", async () => {
+                      const saved = await saveCloud(p);
+                      setP(saved);
+                      dirty.current = false;
+                      setMessage(
+                        "계정에 저장했습니다. 다른 기기에서도 로그인 후 열 수 있습니다."
+                      );
+                    })
+                  }
+                >
+                  클라우드 저장
+                </button>
+              </div>
+            </fieldset>
+            <fieldset disabled={busy} className="at-controls">
             <nav>
               {[
                 ["template", "1. 제품 템플릿"],
@@ -404,7 +411,10 @@ export default function Atelier() {
                 <button
                   key={id}
                   aria-current={tab === id ? "step" : undefined}
-                  onClick={() => setTab(id)}
+                  onClick={() => {
+                    setTab(id);
+                    setSidebarOpen(false);
+                  }}
                 >
                   {label}
                 </button>
@@ -1052,7 +1062,8 @@ export default function Atelier() {
                 )}
               </>
             )}
-          </fieldset>
+            </fieldset>
+          </aside>
           {pendingTemplate && (
             <section aria-modal="true" className="at-template-confirm" role="dialog" aria-label="새 제품 템플릿 시작 확인">
               <div>
@@ -1066,7 +1077,26 @@ export default function Atelier() {
               </div>
             </section>
           )}
-          <aside>
+          <section className="at-workspace-stage" aria-label="제품 프리뷰">
+            <div className="at-stage-header">
+              <div>
+                <span>{getTemplate(p.templateId!).label}</span>
+                <b>{p.width} × {p.height} × {p.depth} cm</b>
+              </div>
+              <div>
+                <button
+                  aria-controls="atelier-controls"
+                  aria-expanded={sidebarOpen}
+                  className="at-mobile-sidebar-toggle"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <PanelLeft size={16} /> 편집
+                </button>
+                <button onClick={showShelf} disabled={busy}>
+                  <Layers size={16} /> 내 저장 작업
+                </button>
+              </div>
+            </div>
             <ProductPreview
               authenticated={Boolean(buyer)}
               onMessage={setMessage}
@@ -1148,7 +1178,7 @@ export default function Atelier() {
               이 기기 저장은 브라우저 데이터 삭제 시 사라질 수 있습니다. 다른
               기기에서도 쓰려면 클라우드 저장 또는 전체 백업을 이용하세요.
             </p>
-          </aside>
+          </section>
         </div>
         {shelf && (
           <section className="at-shelf">

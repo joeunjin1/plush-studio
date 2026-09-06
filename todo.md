@@ -77,3 +77,8 @@
 - [x] Extend the rounded multi-part primary body treatment to rabbit, cat, keyring, and cushion templates while retaining their distinctive proportions and existing parameter behavior.
 - [x] Add baseline visual regression assertions for rabbit ear-angle responsiveness and representative Bear·Tote·Regular Tee fallback performance budgets.
 - [x] Extend quality regression assertions to every visual parameter mapping and every template manifest's mobile/desktop fallback performance budget.
+- [ ] Replace the tall Product Atelier hero and horizontal control band with a compact workspace header, a desktop left sidebar, and a dominant central product viewer; provide an accessible mobile drawer without reducing preview priority.
+- [ ] Reorganize template selection, dimensions, materials, structures, readiness, and protected actions into a clear sidebar workflow with persistent current-product context and no fabricated product imagery.
+- [ ] Add a product reference library domain model that records seller-supplied orthographic photo sets, source status, product family, version, review state, and target 3D template without storing image bytes in the database.
+- [ ] Implement an authenticated reference-photo intake flow that accepts front, side, back, top, and optional detail views, validates image set completeness, and makes only reviewed seller assets selectable for buyer-facing templates.
+- [ ] Publish a seller photo-capture guide covering neutral lighting, fixed distance, orthographic views, scale reference, filename convention, and rights confirmation for the first Basic Bear reference set.
