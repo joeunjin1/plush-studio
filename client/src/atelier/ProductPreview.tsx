@@ -9,14 +9,14 @@ import { materialAppearance, resolveTemplateParts, visualTemplateProfile } from 
 import { buildDesignProof, buildProofExportPlan } from "./designProof";
 import type { ProtectedArtifact } from "./buyerAccess";
 
-function createPlushTexture() {
+function createMaterialTexture(materialName: string | undefined) {
   const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 512;
+  canvas.width = 384;
+  canvas.height = 384;
   const context = canvas.getContext("2d");
   if (!context) return null;
-  context.fillStyle = "#b77948";
-  context.fillRect(0, 0, 512, 512);
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, 384, 384);
   let seed = 2463534242;
   const next = () => {
     seed ^= seed << 13;
@@ -24,22 +24,44 @@ function createPlushTexture() {
     seed ^= seed << 5;
     return (seed >>> 0) / 4294967296;
   };
-  for (let index = 0; index < 1800; index++) {
-    const x = next() * 512;
-    const y = next() * 512;
-    const length = 2 + next() * 7;
-    context.strokeStyle = next() > 0.5 ? "rgba(255,236,203,0.13)" : "rgba(78,42,23,0.12)";
-    context.lineWidth = 0.45 + next() * 0.75;
-    context.beginPath();
-    context.moveTo(x, y);
-    context.lineTo(x + length, y + (next() - 0.5) * 1.8);
-    context.stroke();
+  if (materialName === "minky" || materialName === "velboa") {
+    for (let index = 0; index < 1200; index++) {
+      const x = next() * 384;
+      const y = next() * 384;
+      const length = 1.5 + next() * 5;
+      context.strokeStyle = next() > 0.5 ? "rgba(255,255,255,0.12)" : "rgba(52,37,26,0.12)";
+      context.lineWidth = 0.35 + next() * 0.6;
+      context.beginPath();
+      context.moveTo(x, y);
+      context.lineTo(x + length, y + (next() - 0.5) * 1.6);
+      context.stroke();
+    }
+  } else if (materialName === "canvas" || materialName === "cotton") {
+    context.lineWidth = 0.55;
+    for (let index = 0; index < 384; index += 8) {
+      context.strokeStyle = index % 16 === 0 ? "rgba(77,89,70,0.12)" : "rgba(255,255,255,0.22)";
+      context.beginPath();
+      context.moveTo(index, 0);
+      context.lineTo(index, 384);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(0, index);
+      context.lineTo(384, index);
+      context.stroke();
+    }
+  } else if (materialName === "poly" || materialName === "nylon") {
+    for (let index = 0; index < 260; index++) {
+      const x = next() * 384;
+      const y = next() * 384;
+      context.fillStyle = next() > 0.5 ? "rgba(255,255,255,0.13)" : "rgba(56,73,65,0.08)";
+      context.fillRect(x, y, 1.4, 1.4);
+    }
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(2.6, 2.6);
+  texture.repeat.set(materialName === "canvas" ? 5.2 : 3.4, materialName === "canvas" ? 5.2 : 3.4);
   return texture;
 }
 export function saveBlob(blob: Blob, name: string) {
@@ -116,7 +138,7 @@ function dispose(root: THREE.Object3D) {
 }
 function previewMaterial(color: string, materialName: string) {
   const base = materialAppearance(materialName);
-  return new THREE.MeshPhysicalMaterial({
+  const material = new THREE.MeshPhysicalMaterial({
     color,
     roughness: base.roughness,
     metalness: base.metalness,
@@ -125,6 +147,9 @@ function previewMaterial(color: string, materialName: string) {
     sheen: materialName === "minky" || materialName === "velboa" ? 0.22 : 0,
     sheenRoughness: materialName === "minky" || materialName === "velboa" ? 0.75 : 1,
   });
+  const texture = createMaterialTexture(materialName);
+  if (texture) material.map = texture;
+  return material;
 }
 function addBearConstructionOverlay(root: THREE.Group, project: Project) {
   if (project.templateId !== "bear") return;
@@ -155,6 +180,130 @@ function addBearConstructionOverlay(root: THREE.Group, project: Project) {
   group.add(new THREE.Line(center, lineMaterial));
   group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(belly), lineMaterial.clone()));
   root.add(group);
+}
+
+function addPlushDetailOverlay(root: THREE.Group, project: Project) {
+  if (project.product !== "plush") return;
+  if (project.templateId === "cushion") {
+    const z = project.depth / 2 + 0.14;
+    const seam = new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints(
+        new THREE.EllipseCurve(0, 0, project.width * 0.39, project.height * 0.39, 0, Math.PI * 2)
+          .getPoints(36)
+          .map(point => new THREE.Vector3(point.x, point.y, z))
+      ),
+      new THREE.LineBasicMaterial({ color: "#785c48", transparent: true, opacity: 0.4 })
+    );
+    seam.name = "SEAM_cushion_perimeter";
+    root.add(seam);
+    return;
+  }
+  const details = new THREE.Group();
+  details.name = "DETAIL_plush_face";
+  const accent = new THREE.MeshPhysicalMaterial({
+    color: "#edd1bd",
+    roughness: 0.78,
+    sheen: 0.14,
+  });
+  const dark = new THREE.MeshPhysicalMaterial({ color: "#3a3029", roughness: 0.55 });
+  const faceZ = project.depth * 0.47;
+  const muzzle = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 20), accent);
+  muzzle.name = "DETAIL_muzzle";
+  muzzle.scale.set(project.width * 0.19, project.height * 0.1, Math.max(0.55, project.depth * 0.055));
+  muzzle.position.set(0, project.height * 0.015, faceZ);
+  details.add(muzzle);
+  const rabbit = project.templateId === "rabbit";
+  [-1, 1].forEach(direction => {
+    const innerEar = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 28, 18),
+      accent.clone()
+    );
+    innerEar.name = direction < 0 ? "DETAIL_inner_ear_left" : "DETAIL_inner_ear_right";
+    innerEar.scale.set(
+      project.width * 0.08,
+      rabbit ? project.height * 0.17 : project.height * 0.065,
+      Math.max(0.3, project.depth * 0.028)
+    );
+    innerEar.position.set(
+      direction * project.width * 0.285,
+      rabbit ? project.height * 0.35 : project.height * 0.37,
+      faceZ * 0.82
+    );
+    details.add(innerEar);
+  });
+  [-1, 1].forEach(direction => {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), dark.clone());
+    eye.name = direction < 0 ? "DETAIL_eye_left" : "DETAIL_eye_right";
+    eye.scale.set(project.width * 0.035, project.width * 0.035, Math.max(0.28, project.depth * 0.025));
+    eye.position.set(direction * project.width * 0.105, project.height * 0.14, faceZ + 0.08);
+    details.add(eye);
+    const paw = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), accent.clone());
+    paw.name = direction < 0 ? "DETAIL_paw_left" : "DETAIL_paw_right";
+    paw.scale.set(project.width * 0.075, project.height * 0.055, Math.max(0.34, project.depth * 0.03));
+    paw.position.set(direction * project.width * 0.23, -project.height * 0.36, faceZ * 0.62);
+    details.add(paw);
+  });
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), dark);
+  nose.name = "DETAIL_nose";
+  nose.scale.set(project.width * 0.048, project.height * 0.032, Math.max(0.28, project.depth * 0.025));
+  nose.position.set(0, project.height * 0.055, faceZ + 0.1);
+  details.add(nose);
+  root.add(details);
+  const seam = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(0, project.height * 0.015, project.depth / 2 + 0.13),
+      new THREE.Vector3(0, -project.height * 0.3, project.depth / 2 + 0.13),
+    ]),
+    new THREE.LineBasicMaterial({ color: "#785c48", transparent: true, opacity: 0.35 })
+  );
+  seam.name = "SEAM_plush_center";
+  root.add(seam);
+}
+
+function addBagConstructionOverlay(root: THREE.Group, project: Project) {
+  if (project.product !== "bag") return;
+  const z = project.depth / 2 + 0.14;
+  const material = new THREE.LineBasicMaterial({ color: "#55705b", transparent: true, opacity: 0.55 });
+  const group = new THREE.Group();
+  group.name = "SEAM_bag_panels";
+  const points = [
+    [new THREE.Vector3(-project.width * 0.4, project.height * 0.43, z), new THREE.Vector3(project.width * 0.4, project.height * 0.43, z)],
+    [new THREE.Vector3(-project.width * 0.42, project.height * 0.38, z), new THREE.Vector3(-project.width * 0.42, -project.height * 0.4, z)],
+    [new THREE.Vector3(project.width * 0.42, project.height * 0.38, z), new THREE.Vector3(project.width * 0.42, -project.height * 0.4, z)],
+    [new THREE.Vector3(-project.width * 0.35, -project.height * 0.42, z), new THREE.Vector3(project.width * 0.35, -project.height * 0.42, z)],
+  ];
+  points.forEach((pair, index) => {
+    const seam = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pair), material.clone());
+    seam.name = `SEAM_bag_${index + 1}`;
+    group.add(seam);
+  });
+  root.add(group);
+}
+
+function addShirtConstructionOverlay(root: THREE.Group, project: Project) {
+  if (project.product !== "shirt") return;
+  const z = project.depth / 2 + 0.12;
+  const material = new THREE.LineBasicMaterial({ color: "#6b8068", transparent: true, opacity: 0.5 });
+  const group = new THREE.Group();
+  group.name = "SEAM_shirt_details";
+  const seams = [
+    [new THREE.Vector3(-project.width * 0.28, -project.height * 0.43, z), new THREE.Vector3(project.width * 0.28, -project.height * 0.43, z)],
+    [new THREE.Vector3(-project.width * 0.3, project.height * 0.12, z), new THREE.Vector3(-project.width * 0.43, project.height * 0.27, z)],
+    [new THREE.Vector3(project.width * 0.3, project.height * 0.12, z), new THREE.Vector3(project.width * 0.43, project.height * 0.27, z)],
+  ];
+  seams.forEach((pair, index) => {
+    const seam = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pair), material.clone());
+    seam.name = `SEAM_shirt_${index + 1}`;
+    group.add(seam);
+  });
+  root.add(group);
+}
+
+function addConstructionOverlay(root: THREE.Group, project: Project) {
+  addBearConstructionOverlay(root, project);
+  addPlushDetailOverlay(root, project);
+  addBagConstructionOverlay(root, project);
+  addShirtConstructionOverlay(root, project);
 }
 export function ProductPreview({
   project: p,
@@ -292,26 +441,14 @@ export function ProductPreview({
           g.add(mesh);
         } else root.add(mesh);
       });
-      addBearConstructionOverlay(root, p);
+      addConstructionOverlay(root, p);
       root.updateMatrixWorld(true);
       framePreview(e, view);
       requestAnimationFrame(() => {
         if (!cancelled) framePreview(e, view);
       });
-      const needsBearFabric = p.templateId === "bear";
-      setTexturesReady(p.decals.length === 0 && !needsBearFabric);
-      let pending = p.decals.length + (needsBearFabric ? 1 : 0);
-      if (needsBearFabric) {
-        const texture = createPlushTexture();
-        const material = body.material;
-        if (texture && material instanceof THREE.MeshPhysicalMaterial) {
-          material.map = texture;
-          material.needsUpdate = true;
-        } else {
-          onMessage("플러시 원단 질감을 만들지 못해 기본 재질로 표시합니다.");
-        }
-        if (--pending === 0) setTexturesReady(true);
-      }
+      setTexturesReady(p.decals.length === 0);
+      let pending = p.decals.length;
       p.decals.forEach(decal => {
         const asset = p.assets.find(a => a.id === decal.assetId);
         if (!asset?.data) {

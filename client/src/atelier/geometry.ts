@@ -20,6 +20,98 @@ function span(points: Point[], y: number) {
     );
   return xs;
 }
+
+function roundedPanelGeometry(
+  width: number,
+  height: number,
+  depth: number,
+  radius: number
+) {
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+  const corner = Math.max(
+    0.1,
+    Math.min(radius, halfWidth * 0.42, halfHeight * 0.42)
+  );
+  const shape = new THREE.Shape();
+  shape.moveTo(-halfWidth + corner, -halfHeight);
+  shape.lineTo(halfWidth - corner, -halfHeight);
+  shape.quadraticCurveTo(halfWidth, -halfHeight, halfWidth, -halfHeight + corner);
+  shape.lineTo(halfWidth, halfHeight - corner);
+  shape.quadraticCurveTo(halfWidth, halfHeight, halfWidth - corner, halfHeight);
+  shape.lineTo(-halfWidth + corner, halfHeight);
+  shape.quadraticCurveTo(-halfWidth, halfHeight, -halfWidth, halfHeight - corner);
+  shape.lineTo(-halfWidth, -halfHeight + corner);
+  shape.quadraticCurveTo(-halfWidth, -halfHeight, -halfWidth + corner, -halfHeight);
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth,
+    bevelEnabled: true,
+    bevelSize: Math.min(corner * 0.28, depth * 0.22),
+    bevelThickness: Math.min(corner * 0.2, depth * 0.16),
+    bevelSegments: 4,
+    curveSegments: 12,
+  });
+  geometry.translate(0, 0, -depth / 2);
+  geometry.computeVertexNormals();
+  return fitGeometryToBounds(geometry, width, height, depth);
+}
+
+function fitGeometryToBounds(
+  geometry: THREE.BufferGeometry,
+  width: number,
+  height: number,
+  depth: number
+) {
+  geometry.computeBoundingBox();
+  const size = geometry.boundingBox!.getSize(new THREE.Vector3());
+  geometry.scale(width / size.x, height / size.y, depth / size.z);
+  geometry.computeBoundingBox();
+  return geometry;
+}
+
+function shirtBodyGeometry(width: number, height: number, depth: number) {
+  const bodyWidth = width * 0.58;
+  const sleeveReach = width * 0.49;
+  const shoulderY = height * 0.42;
+  const underarmY = height * 0.1;
+  const hemY = -height / 2;
+  const shape = new THREE.Shape();
+  shape.moveTo(-bodyWidth / 2, hemY);
+  shape.lineTo(bodyWidth / 2, hemY);
+  shape.lineTo(bodyWidth / 2, underarmY);
+  shape.lineTo(sleeveReach, height * 0.22);
+  shape.quadraticCurveTo(
+    sleeveReach + width * 0.025,
+    height * 0.29,
+    sleeveReach - width * 0.045,
+    shoulderY
+  );
+  shape.lineTo(width * 0.2, height / 2);
+  shape.quadraticCurveTo(width * 0.075, height * 0.39, 0, height * 0.39);
+  shape.quadraticCurveTo(-width * 0.075, height * 0.39, -width * 0.2, height / 2);
+  shape.lineTo(-sleeveReach + width * 0.045, shoulderY);
+  shape.quadraticCurveTo(
+    -sleeveReach - width * 0.025,
+    height * 0.29,
+    -sleeveReach,
+    height * 0.22
+  );
+  shape.lineTo(-bodyWidth / 2, underarmY);
+  shape.closePath();
+  const thickness = Math.max(depth, 0.55);
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: thickness,
+    bevelEnabled: true,
+    bevelSize: Math.min(width * 0.012, 0.8),
+    bevelThickness: Math.min(depth * 0.2, 0.32),
+    bevelSegments: 3,
+    curveSegments: 12,
+  });
+  geometry.translate(0, 0, -thickness / 2);
+  geometry.computeVertexNormals();
+  return fitGeometryToBounds(geometry, width, height, depth);
+}
+
 export function shapeGeometry(
   front: Point[],
   side: Point[],
@@ -114,6 +206,32 @@ export function productGeometry(p: Project) {
     geometry.computeBoundingBox();
     return geometry;
   }
+  if (p.templateId === "rabbit" || p.templateId === "cat" || p.templateId === "keyring") {
+    const geometry = new THREE.SphereGeometry(1, 48, 36);
+    const verticalScale = p.templateId === "rabbit" ? 0.32 : p.templateId === "cat" ? 0.44 : 0.35;
+    geometry.scale(p.width * 0.36, p.height * verticalScale, p.depth * 0.46);
+    geometry.translate(0, -p.height * 0.09, 0);
+    geometry.computeVertexNormals();
+    geometry.computeBoundingBox();
+    return geometry;
+  }
+  if (p.templateId === "cushion") {
+    return roundedPanelGeometry(
+      p.width,
+      p.height,
+      p.depth,
+      Math.min(p.width, p.height) * 0.18
+    );
+  }
+  if (p.product === "bag") {
+    return roundedPanelGeometry(
+      p.width,
+      p.height,
+      p.depth,
+      Math.min(p.width, p.height) * 0.08
+    );
+  }
+  if (p.product === "shirt") return shirtBodyGeometry(p.width, p.height, p.depth);
   return shapeGeometry(
     p.useOutline ? p.front : outlines[p.product],
     p.useOutline
@@ -138,6 +256,27 @@ export function productGeometry(p: Project) {
 export function partGeometry(p: Part) {
   if (p.shape === "outline")
     return shapeGeometry(p.front, p.side, p.width, p.height, p.depth);
+  if (
+    p.kind === "zipper" ||
+    p.kind === "pocket" ||
+    p.kind === "front-pocket" ||
+    p.kind === "flap"
+  ) {
+    return roundedPanelGeometry(
+      p.width,
+      p.height,
+      p.depth,
+      Math.min(p.width, p.height) * 0.14
+    );
+  }
+  if (p.kind === "sleeve-left" || p.kind === "sleeve-right") {
+    return roundedPanelGeometry(
+      p.width,
+      p.height,
+      Math.max(p.depth, 0.6),
+      p.width * 0.2
+    );
+  }
   const g = p.shape === "box"
     ? new THREE.BoxGeometry(p.width, p.height, p.depth)
     : p.shape === "cylinder"

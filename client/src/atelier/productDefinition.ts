@@ -154,16 +154,17 @@ const shirtMaterials: MaterialSlot[] = [
 ];
 
 function plushParts(kind: TemplateId): TemplatePart[] {
+  const scale = kind === "keyring" ? 0.55 : 1;
   const base: TemplatePart[] = [
-    { name: "왼쪽 귀", kind: "ear-left", materialSlot: "accent", shape: "sphere", width: 5, height: kind === "rabbit" ? 12 : 5, depth: 3, x: -6, y: 9, z: 0, rotation: kind === "rabbit" ? -12 : 0 },
-    { name: "오른쪽 귀", kind: "ear-right", materialSlot: "accent", shape: "sphere", width: 5, height: kind === "rabbit" ? 12 : 5, depth: 3, x: 6, y: 9, z: 0, rotation: kind === "rabbit" ? 12 : 0 },
-    { name: "왼쪽 팔", kind: "arm-left", materialSlot: "body", shape: "capsule", width: 3, height: 7, depth: 3, x: -9, y: 0, z: 0, rotation: 15 },
-    { name: "오른쪽 팔", kind: "arm-right", materialSlot: "body", shape: "capsule", width: 3, height: 7, depth: 3, x: 9, y: 0, z: 0, rotation: -15 },
-    { name: "왼쪽 다리", kind: "leg-left", materialSlot: "body", shape: "sphere", width: 5, height: 6, depth: 5, x: -5, y: -9, z: 1, rotation: 0 },
-    { name: "오른쪽 다리", kind: "leg-right", materialSlot: "body", shape: "sphere", width: 5, height: 6, depth: 5, x: 5, y: -9, z: 1, rotation: 0 },
+    { name: "왼쪽 귀", kind: "ear-left", materialSlot: "accent", shape: "sphere", width: 5 * scale, height: (kind === "rabbit" ? 12 : 5) * scale, depth: 3 * scale, x: -6 * scale, y: 9 * scale, z: 0, rotation: kind === "rabbit" ? -12 : 0 },
+    { name: "오른쪽 귀", kind: "ear-right", materialSlot: "accent", shape: "sphere", width: 5 * scale, height: (kind === "rabbit" ? 12 : 5) * scale, depth: 3 * scale, x: 6 * scale, y: 9 * scale, z: 0, rotation: kind === "rabbit" ? 12 : 0 },
+    { name: "왼쪽 팔", kind: "arm-left", materialSlot: "body", shape: "capsule", width: 3 * scale, height: 7 * scale, depth: 3 * scale, x: -9 * scale, y: 0, z: 0, rotation: 15 },
+    { name: "오른쪽 팔", kind: "arm-right", materialSlot: "body", shape: "capsule", width: 3 * scale, height: 7 * scale, depth: 3 * scale, x: 9 * scale, y: 0, z: 0, rotation: -15 },
+    { name: "왼쪽 다리", kind: "leg-left", materialSlot: "body", shape: "sphere", width: 5 * scale, height: 6 * scale, depth: 5 * scale, x: -5 * scale, y: -9 * scale, z: 1 * scale, rotation: 0 },
+    { name: "오른쪽 다리", kind: "leg-right", materialSlot: "body", shape: "sphere", width: 5 * scale, height: 6 * scale, depth: 5 * scale, x: 5 * scale, y: -9 * scale, z: 1 * scale, rotation: 0 },
   ];
   if (kind === "cat") base.push({ name: "꼬리", kind: "tail", materialSlot: "body", shape: "capsule", width: 2.2, height: 11, depth: 2.2, x: 8, y: -7, z: -1, rotation: -38 });
-  if (kind === "keyring") base.push({ name: "키링 고리", kind: "keyring-loop", materialSlot: "hardware", shape: "torus", width: 3, height: 3, depth: 0.6, x: 0, y: 15, z: 0, rotation: 0, color: palette.metal });
+  if (kind === "keyring") base.push({ name: "키링 고리", kind: "keyring-loop", materialSlot: "hardware", shape: "torus", width: 3 * scale, height: 3 * scale, depth: 0.6, x: 0, y: 15 * scale, z: 0, rotation: 0, color: palette.metal });
   return base;
 }
 function bagParts(kind: TemplateId): TemplatePart[] {

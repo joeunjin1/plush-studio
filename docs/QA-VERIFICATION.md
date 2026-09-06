@@ -17,3 +17,7 @@ Before release approval, rerun the buyer trial QA from a normal browser tab and 
 ## 2026-09-06 — Narrow mobile layout
 
 The Basic Bear Atelier entry screen was visually checked at a 320 × 720 viewport. The top navigation labels remained on one line, the headline rendered as a readable Korean word group without clipping, the local-work action moved below the description, and the 3D preview remained the next primary content panel. The title uses `word-break: keep-all` without `white-space: nowrap`, so it can wrap at word boundaries rather than overflow at smaller widths.
+
+## 2026-09-06 — Core product visual-quality pass
+
+The desktop and 390 × 844 mobile reviews covered the Basic Bear, Tote Bag, and Regular T-shirt. The procedural Basic Bear now has a short-pile material impression, face and paw panels, and key seam guides. Core bag models use rounded padded panel geometry with construction seam lines, handles, closure, and pocket geometry. Core T-shirts use a defined shoulder and sleeve silhouette with collar, sleeve, and hem seam detail. All remain explicitly labelled as lightweight Concept/Prototype previews, not factory-validated 3D digital twins or substitute production patterns.

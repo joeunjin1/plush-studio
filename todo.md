@@ -67,6 +67,13 @@
 - [x] Await the protected-export audit insert before presenting export success, and show a distinct partial-success state if the file download completes but audit persistence fails.
 - [ ] Add protected-export regression tests for audit-success and audit-failure messaging, then repeat the current staging export UAT and verify one metadata-only audit row.
 - [x] Center the primary 3D product body within the desktop preview canvas while preserving full-product framing for asymmetric accessory geometry.
-- [ ] Diagnose and fix the deployed staging Preview mismatch that leaves the 3D product shifted to the right despite the verified local centered framing.
-- [ ] Implement a projected-screen-space centering correction for the primary product body and verify its canvas center offset on the actual Bear preview.
-- [ ] Diagnose and fix the staging Magic Link email request failure, preserving production authentication settings and providing a specific user-facing error when the provider rejects a request.
+- [x] Diagnose and fix the deployed staging Preview mismatch that left the 3D product shifted to the right despite verified local framing; renderer display-size synchronization resolved the actual cause.
+- [x] Verify that renderer display-size synchronization, rather than an additional projected-screen-space offset, centers the primary product body on the actual Preview without clipping asymmetric geometry.
+- [x] Diagnose and fix the staging Magic Link email request failure while preserving Production settings; the latest immutable Preview redirect was allowlisted and user UAT confirmed email dispatch.
+- [x] Upgrade the Basic Bear and shared plush detail layer with contrasting muzzle/inner-ear/paw panels and visible seam guides, without claiming factory validation.
+- [x] Upgrade core bag templates with padded volume, gussets, handles or straps, zipper/closure lines, pocket panels, and hardware accents that respond to existing configuration parameters.
+- [x] Upgrade core T-shirt templates with a rounded fabric body, distinct sleeves and ribbed collar, hem/stitch details, front/back/side view differentiation, and existing print-zone compatibility.
+- [x] Add baseline product-family visual regression tests for lightweight material treatments, construction overlays, and primary-body volume.
+- [x] Extend the rounded multi-part primary body treatment to rabbit, cat, keyring, and cushion templates while retaining their distinctive proportions and existing parameter behavior.
+- [x] Add baseline visual regression assertions for rabbit ear-angle responsiveness and representative Bear·Tote·Regular Tee fallback performance budgets.
+- [x] Extend quality regression assertions to every visual parameter mapping and every template manifest's mobile/desktop fallback performance budget.
