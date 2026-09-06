@@ -37,4 +37,4 @@
 - [x] Improve the mobile-first Product Atelier flow with protected product switching, compact product-specific controls, accessible 3D view controls, and step-focused editing.
 - [x] Redesign the mobile 3D preview so the canvas remains dominant and view/export controls do not collapse into a narrow vertical rail.
 - [x] Verify actual Design Proof multi-view export behavior and complete documented desktop/mobile task flows for plush, bag, and T-shirt templates, including template switch, required-reference errors, Proof state, and request blocking.
-- [ ] Split the remaining large initial JavaScript bundle so Product Atelier, 3D rendering, and document export dependencies load only when a customer enters the relevant workflow.
+- [ ] Rebuild and measure the manual React/UI/data vendor splits to verify that the remaining initial JavaScript payload is reduced while Product Atelier, 3D rendering, and document export dependencies remain on-demand.

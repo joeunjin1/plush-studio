@@ -19,7 +19,13 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: { three: ["three"], supabase: ["@supabase/supabase-js"] },
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "wouter"],
+          "vendor-data": ["@tanstack/react-query", "@trpc/client", "@trpc/react-query", "superjson", "zod"],
+          "vendor-ui": ["lucide-react", "class-variance-authority", "clsx", "tailwind-merge"],
+          three: ["three"],
+          supabase: ["@supabase/supabase-js"],
+        },
       },
     },
   },
