@@ -86,3 +86,4 @@
 - [x] Add replaceable memorial-tag options so a buyer can choose the tag face, enter a constrained commemorative message, and preview its placement without treating personalized text as a factory-approved production file.
 - [x] Create a reusable five-angle product-view system that renders uploaded front, left, rear, right, and top reference images as view-locked virtual 3D rotation states with explicit photo-based-preview limitations.
 - [ ] Add product-registration fields for SKU uniqueness, category, color option, physical dimensions, carton dimensions, and calculated CBM before opening the reviewed product library to buyers.
+- [ ] Fix Vercel Preview routing so `/manus-storage` reference-product images and memorial-tag faces return image content instead of SPA HTML, then verify all seven Bernese assets on staging.
