@@ -12,6 +12,8 @@
 | Preview | pull request branch | Preview | a dedicated staging Supabase project | Design review, authentication verification, and migration rehearsal. |
 | Production | `main` | Production | `plush-studio` (`lzrjjfjpatcwsxhjafpy`) | Authorized brand, designer, factory, and QC work. |
 
+The `staging` Git branch is created and pushed from the validated baseline. Vercel now has browser-safe Config (not Secret) pairs for `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`: the Production pair targets `plush-studio`; the Preview pair targets `plush-studio-staging`. The Preview pair is restricted to the `staging` preview branch and does not alter the Production values.
+
 > Preview must not point to the Production Supabase project once external users can sign in. This separation prevents test assets, test email links, and test write operations from entering manufacturing records.
 
 ## Vercel variables
@@ -43,7 +45,7 @@ The public RPC endpoint and `transition_note` column were read-only verified aft
 
 ## Staging setup status
 
-The approved **`plush-studio-staging`** project is created under the `DesignToGoods` organization with project ref `trhhgmionyyfnbwhxenn`, URL `https://trhhgmionyyfnbwhxenn.supabase.co`, `MICRO`, and `Northeast Asia (Seoul) · ap-northeast-2`. It is healthy and intentionally contains no Production data. At creation, the dashboard showed `No migrations`; apply the version-controlled migration set before configuring its Vercel Preview environment. The database password is not recorded in this repository.
+The approved **`plush-studio-staging`** project is created under the `DesignToGoods` organization with project ref `trhhgmionyyfnbwhxenn`, URL `https://trhhgmionyyfnbwhxenn.supabase.co`, `MICRO`, and `Northeast Asia (Seoul) · ap-northeast-2`. It is healthy, contains no Production data, and has the six version-controlled migrations applied. The database password is not recorded in this repository.
 
 ### Vercel public-variable constraint
 
@@ -68,3 +70,5 @@ GitHub commit `4497954` (`fix: align default BOM with 3d plush assembly`) then p
 GitHub `main` checkpoint `987ea81` is deployed through Vercel at `https://plush-studio-3k34x9e7i-joeunjin1s-projects.vercel.app`. The Product Atelier is available at `/#atelier`; the root URL intentionally remains the original public plush configurator landing experience. The deployed Atelier was checked for the new template system, parameter-aware 3D preview, materials, Design Readiness, and Design Proof controls.
 
 GitHub commit `9cdb709` (`feat: add BOM specs and guarded request lifecycle`) triggered the next Production deployment at `https://plush-studio-roc3n9ar6-joeunjin1s-projects.vercel.app`. The deployment URL responded with the public Plush Studio page during the Vercel build-status check. The status should be recorded as Ready only after the project deployment list completes its final refresh; the URL is retained here as the immutable build target.
+
+Vercel Preview deployment `9d5rB3wwa3Yq8zDWUtxzkgYtZrk5` completed successfully with the Preview environment. It exposes `https://plush-studio-git-main-joeunjin1s-projects.vercel.app` and `https://plush-studio-m8cbtrfee-joeunjin1s-projects.vercel.app`. A final Preview deployment should be triggered from the `staging` branch after its next code change so the source label confirms `staging` before release approval.
