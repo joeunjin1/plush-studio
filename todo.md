@@ -22,6 +22,7 @@
 - [ ] Configure distinct Vercel Preview and Production Supabase targets, then verify a Preview deployment does not write to production manufacturing data.
 - [ ] Update the operations runbook with the final, applied Preview and Production branch-to-database mapping after the staging Supabase project exists.
 - [ ] Create the approved `plush-studio-staging` Supabase project in Seoul and apply the version-controlled migration set without copying Production data.
+- [ ] Create and protect a `staging` GitHub branch, then bind its Vercel Preview deployment to the plush-studio-staging Config variables without altering Production settings.
 - [ ] Add active-version, construction notes, and QA criteria payloads to both Tech Pack PDF and XLSX exports.
 - [ ] Add user-facing failure and loading states for GLB/PDF/XLSX exports and cloud saves, plus empty states for key data flows.
 - [x] Add a read-only Supabase schema validation test that verifies every required collaboration table, private asset bucket, and access-control function after migrations are applied.

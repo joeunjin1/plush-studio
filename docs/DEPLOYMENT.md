@@ -41,6 +41,14 @@ After applying migration 005, use the staff-only `transition_customer_request` R
 
 The public RPC endpoint and `transition_note` column were read-only verified after migration 006. Before customer onboarding, run a role-based UAT with a designated `customer_request_staff` account to confirm a real operator can advance an eligible request and that a non-staff authenticated user receives `FORBIDDEN`.
 
+## Staging setup status
+
+The approved **`plush-studio-staging`** project is created under the `DesignToGoods` organization with project ref `trhhgmionyyfnbwhxenn`, URL `https://trhhgmionyyfnbwhxenn.supabase.co`, `MICRO`, and `Northeast Asia (Seoul) · ap-northeast-2`. It is healthy and intentionally contains no Production data. At creation, the dashboard showed `No migrations`; apply the version-controlled migration set before configuring its Vercel Preview environment. The database password is not recorded in this repository.
+
+### Vercel public-variable constraint
+
+Variables prefixed with `VITE_` are compiled into the browser bundle by Vite. Vercel therefore requires them to use **Config** visibility, not **Secret** visibility. Existing secret values cannot be converted in place: delete and recreate each of `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Config values. Use one Production-scoped pair for `lzrjjfjpatcwsxhjafpy` and one Preview-scoped pair for `trhhgmionyyfnbwhxenn`. Publishable keys are permitted in these browser values; service-role keys and database passwords must never be added to Vercel.
+
 ## Production release checklist
 
 1. Apply pending SQL to the target Supabase project and confirm `Success` in SQL Editor.
@@ -58,3 +66,5 @@ The Vercel project **`plush-studio`** was created from `joeunjin1/plush-studio` 
 GitHub commit `4497954` (`fix: align default BOM with 3d plush assembly`) then passed automatically through Vercel Production deployment and is live on the stable production URL. The live page was manually checked for loading, 3D basic-form selection, and the rule-based cost simulator; the initial BOM now includes eight 3D assembly components and produces the matching baseline target price of KRW 7,600.
 
 GitHub `main` checkpoint `987ea81` is deployed through Vercel at `https://plush-studio-3k34x9e7i-joeunjin1s-projects.vercel.app`. The Product Atelier is available at `/#atelier`; the root URL intentionally remains the original public plush configurator landing experience. The deployed Atelier was checked for the new template system, parameter-aware 3D preview, materials, Design Readiness, and Design Proof controls.
+
+GitHub commit `9cdb709` (`feat: add BOM specs and guarded request lifecycle`) triggered the next Production deployment at `https://plush-studio-roc3n9ar6-joeunjin1s-projects.vercel.app`. The deployment URL responded with the public Plush Studio page during the Vercel build-status check. The status should be recorded as Ready only after the project deployment list completes its final refresh; the URL is retained here as the immutable build target.
