@@ -68,4 +68,5 @@
 - [ ] Add protected-export regression tests for audit-success and audit-failure messaging, then repeat the current staging export UAT and verify one metadata-only audit row.
 - [x] Center the primary 3D product body within the desktop preview canvas while preserving full-product framing for asymmetric accessory geometry.
 - [ ] Diagnose and fix the deployed staging Preview mismatch that leaves the 3D product shifted to the right despite the verified local centered framing.
+- [ ] Implement a projected-screen-space centering correction for the primary product body and verify its canvas center offset on the actual Bear preview.
 - [ ] Diagnose and fix the staging Magic Link email request failure, preserving production authentication settings and providing a specific user-facing error when the provider rejects a request.

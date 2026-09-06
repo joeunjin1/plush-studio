@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { previewCameraDistance, previewFrameSize } from "./ProductPreview";
 
@@ -32,5 +33,12 @@ describe("ProductPreview camera framing", () => {
     expect(previewFrameSize(bounds, bodyCenter)).toEqual(
       new THREE.Vector3(44, 24, 12)
     );
+  });
+
+  it("keeps the Canvas display box synchronized with the measured preview container", () => {
+    const source = readFileSync(new URL("./ProductPreview.tsx", import.meta.url), "utf8");
+    expect(source).toContain('renderer.domElement.style.width = "100%"');
+    expect(source).toContain('renderer.domElement.style.height = "100%"');
+    expect(source).toContain("const layoutFrame = requestAnimationFrame(resize)");
   });
 });

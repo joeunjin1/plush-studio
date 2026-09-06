@@ -203,6 +203,8 @@ export function ProductPreview({
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 3000);
     camera.position.set(0, 0, 150);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
     host.current.replaceChildren(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -215,7 +217,7 @@ export function ProductPreview({
       const resize = () => {
       const w = host.current?.clientWidth || 500,
         h = host.current?.clientHeight || 500;
-        renderer.setSize(w, h, false);
+        renderer.setSize(w, h);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         if (engine.current) framePreview(engine.current, view);
@@ -223,6 +225,7 @@ export function ProductPreview({
     const observer = new ResizeObserver(resize);
     observer.observe(host.current);
     resize();
+    const layoutFrame = requestAnimationFrame(resize);
     let frame = 0;
     const animate = () => {
       frame = requestAnimationFrame(animate);
@@ -232,6 +235,7 @@ export function ProductPreview({
     animate();
     return () => {
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(layoutFrame);
       observer.disconnect();
       controls.dispose();
       dispose(scene);
@@ -291,6 +295,9 @@ export function ProductPreview({
       addBearConstructionOverlay(root, p);
       root.updateMatrixWorld(true);
       framePreview(e, view);
+      requestAnimationFrame(() => {
+        if (!cancelled) framePreview(e, view);
+      });
       const needsBearFabric = p.templateId === "bear";
       setTexturesReady(p.decals.length === 0 && !needsBearFabric);
       let pending = p.decals.length + (needsBearFabric ? 1 : 0);
