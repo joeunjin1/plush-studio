@@ -15,6 +15,11 @@ describe("reviewed reference product catalog", () => {
     expect(referenceViewIds.every(view => Boolean(product?.views[view].image))).toBe(true);
   });
 
+  it("uses an environment-specific public catalog location outside local development", () => {
+    const source = referenceProducts[0].views.front.image;
+    expect(source).toContain("/manus-storage/");
+  });
+
   it("keeps tag text constrained and marks the preview as not yet factory approved", () => {
     const product = referenceProducts[0];
     expect(product.memorialTag.maxCharacters).toBe(36);

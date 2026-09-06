@@ -13,9 +13,19 @@ describe("five-angle reference preview", () => {
     expect(source).toContain("GLB 디지털 트윈과는 다르며");
   });
 
-  it("offers selectable memorial-tag faces and constrained commemorative text", () => {
+  it("offers selectable memorial-tag faces and a profile-gated text or artwork editor", () => {
     expect(source).toContain("Object.keys(product.memorialTag.sides)");
     expect(source).toContain("product.memorialTag.sides[side].label");
-    expect(source).toContain("maxLength={product.memorialTag.maxCharacters}");
+    expect(source).toContain("개인화 방식 선택");
+    expect(source).toContain("constrainPersonalizationText");
+    expect(source).toContain("브랜드 마크 이미지 첨부");
+  });
+
+  it("keeps personalization in method, content, and review steps", () => {
+    expect(source).toContain('"method" | "content" | "review"');
+    expect(source).toContain('setPersonalizationStep("content")');
+    expect(source).toContain('setPersonalizationStep("review")');
+    expect(source).toContain("프리뷰 확인");
+    expect(source).toContain("이 개인화 방식 선택");
   });
 });

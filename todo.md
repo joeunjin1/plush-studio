@@ -86,4 +86,13 @@
 - [x] Add replaceable memorial-tag options so a buyer can choose the tag face, enter a constrained commemorative message, and preview its placement without treating personalized text as a factory-approved production file.
 - [x] Create a reusable five-angle product-view system that renders uploaded front, left, rear, right, and top reference images as view-locked virtual 3D rotation states with explicit photo-based-preview limitations.
 - [ ] Add product-registration fields for SKU uniqueness, category, color option, physical dimensions, carton dimensions, and calculated CBM before opening the reviewed product library to buyers.
-- [ ] Fix Vercel Preview routing so `/manus-storage` reference-product images and memorial-tag faces return image content instead of SPA HTML, then verify all seven Bernese assets on staging.
+- [x] Replace the Vercel-incompatible Manus-only reference image path with an isolated public Supabase catalog bucket and preserve private storage for buyer files, project assets, and factory materials.
+- [x] Upload all five Bernese views and both memorial-tag faces to the staging catalog bucket and verify seven direct `image/webp` responses; Production asset upload remains pending.
+- [ ] Deploy the environment-specific public catalog URL binding to staging and verify the product page renders every Bernese reference view and tag face without `/manus-storage` fallback.
+- [x] Build a buyer-facing official product-mall source flow that shows registered five-view products and lets buyers select a product before entering personalization; staging acceptance remains pending.
+- [x] Add source-level reusable personalization-method profiles for memorial tags, screen print, heat transfer, embroidery, woven labels, and patches, with product-specific eligibility, safe areas, character limits, image requirements, and factory review notes; administerable DB records await the registration UI.
+- [x] Add explicit factory-review-note metadata to each personalization profile and profile schema, surface it in the buyer preview, and add regression coverage for those notes.
+- [x] Implement a one-question-per-screen buyer personalization source flow that asks for the method first, then accepts text or an image file and previews the chosen application without fabricating production approval; staging acceptance remains pending.
+- [ ] Store buyer personalization selections against a buyer-company-scoped request and preserve the selected reference-product version, method profile, text/image asset metadata, and review status.
+- [ ] Add a protected administrator product-master workflow for individual SKU registration, duplicate SKU blocking, color options, five direct file attachments, and approved product publication to the buyer mall.
+- [ ] Document the repeatable workflow for registering subsequent products and mapping each real printing method to its reusable personalization profile.

@@ -30,6 +30,7 @@ import {
 } from "./storage";
 import { ProductPreview, saveBlob } from "./ProductPreview";
 import { FiveAngleReferencePreview } from "./FiveAngleReferencePreview";
+import { ProductMall } from "./ProductMall";
 import { referenceProductById, referenceProducts } from "./referenceProducts";
 import { BuyerAuthGate } from "./BuyerAuthGate";
 import {
@@ -88,7 +89,8 @@ export default function Atelier() {
     [receipt, setReceipt] = useState(""),
     [protectedArtifact, setProtectedArtifact] = useState<ProtectedArtifact | null>(null),
     [sidebarOpen, setSidebarOpen] = useState(false),
-    [referenceProductId, setReferenceProductId] = useState<string | null>(initialReferenceProductIdFromUrl);
+    [referenceProductId, setReferenceProductId] = useState<string | null>(initialReferenceProductIdFromUrl),
+    [mallOpen, setMallOpen] = useState(() => new URLSearchParams(window.location.search).get("mall") === "1");
   const operation = useRef(false),
     requestId = useRef(newRequestId()),
     dirty = useRef(false);
@@ -411,6 +413,12 @@ export default function Atelier() {
                 <span>REFERENCE PRODUCT LIBRARY</span>
                 <p>실사 5면 기준 상품</p>
               </div>
+              <button className="at-open-mall" onClick={() => {
+                setMallOpen(true);
+                setSidebarOpen(false);
+              }}>
+                상품몰 열기
+              </button>
               {referenceProducts.map(product => (
                 <button
                   aria-pressed={referenceProductId === product.id}
@@ -418,6 +426,7 @@ export default function Atelier() {
                   key={product.id}
                   onClick={() => {
                     setReferenceProductId(product.id);
+                    setMallOpen(false);
                     setSidebarOpen(false);
                   }}
                 >
@@ -1120,8 +1129,8 @@ export default function Atelier() {
           <section className="at-workspace-stage" aria-label="제품 프리뷰">
             <div className="at-stage-header">
               <div>
-                <span>{selectedReferenceProduct ? "공식 5면 기준 상품" : getTemplate(p.templateId!).label}</span>
-                <b>{selectedReferenceProduct ? selectedReferenceProduct.title : `${p.width} × ${p.height} × ${p.depth} cm`}</b>
+                <span>{mallOpen ? "구매자 상품몰" : selectedReferenceProduct ? "공식 5면 기준 상품" : getTemplate(p.templateId!).label}</span>
+                <b>{mallOpen ? "공식 상품몰" : selectedReferenceProduct ? selectedReferenceProduct.title : `${p.width} × ${p.height} × ${p.depth} cm`}</b>
               </div>
               <div>
                 <button
@@ -1137,7 +1146,16 @@ export default function Atelier() {
                 </button>
               </div>
             </div>
-            {selectedReferenceProduct ? (
+            {mallOpen ? (
+              <ProductMall
+                onSelect={product => {
+                  setReferenceProductId(product.id);
+                  setMallOpen(false);
+                  setMessage(`${product.title}을(를) 선택했습니다. 개인화 방식을 먼저 고른 뒤 내용을 적용해 주세요.`);
+                }}
+                products={referenceProducts}
+              />
+            ) : selectedReferenceProduct ? (
               <FiveAngleReferencePreview
                 onMessage={setMessage}
                 product={selectedReferenceProduct}

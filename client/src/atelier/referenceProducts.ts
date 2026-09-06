@@ -2,6 +2,16 @@ export const referenceViewIds = ["front", "left", "rear", "right", "top"] as con
 export type ReferenceViewId = (typeof referenceViewIds)[number];
 export type MemorialTagSide = "front" | "back";
 
+const catalogBucket = "plush-studio-catalog";
+
+function catalogImage(filename: string, developmentFallback: string) {
+  if (import.meta.env.DEV) return developmentFallback;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "");
+  return supabaseUrl
+    ? `${supabaseUrl}/storage/v1/object/public/${catalogBucket}/${filename}`
+    : developmentFallback;
+}
+
 export type ReferenceProduct = {
   id: string;
   sku: string;
@@ -10,6 +20,7 @@ export type ReferenceProduct = {
   colorLabel: string;
   sourceStatus: "seller-supplied" | "reviewed";
   reviewLabel: string;
+  personalizationProfileIds: string[];
   views: Record<ReferenceViewId, { label: string; image: string }>;
   memorialTag: {
     enabled: boolean;
@@ -30,26 +41,27 @@ export const referenceProducts: ReferenceProduct[] = [
     colorLabel: "블랙 · 화이트 · 브라운",
     sourceStatus: "seller-supplied",
     reviewLabel: "대표 제공 5면 기준 이미지 · 치수/포장 실측 등록 전",
+    personalizationProfileIds: ["memorial-tag-text-v01", "memorial-tag-brand-v01"],
     views: {
       front: {
         label: "정면",
-        image: "/manus-storage/bernese-memorial-plush__front__v01_9bec9492.webp",
+        image: catalogImage("bernese-memorial-plush__front__v01.webp", "/manus-storage/bernese-memorial-plush__front__v01_9bec9492.webp"),
       },
       left: {
         label: "좌측면",
-        image: "/manus-storage/bernese-memorial-plush__left__v01_81485ddc.webp",
+        image: catalogImage("bernese-memorial-plush__left__v01.webp", "/manus-storage/bernese-memorial-plush__left__v01_81485ddc.webp"),
       },
       rear: {
         label: "뒷면",
-        image: "/manus-storage/bernese-memorial-plush__rear__v01_ba0a97e4.webp",
+        image: catalogImage("bernese-memorial-plush__rear__v01.webp", "/manus-storage/bernese-memorial-plush__rear__v01_ba0a97e4.webp"),
       },
       right: {
         label: "우측면",
-        image: "/manus-storage/bernese-memorial-plush__right__v01_c124b4f3.webp",
+        image: catalogImage("bernese-memorial-plush__right__v01.webp", "/manus-storage/bernese-memorial-plush__right__v01_c124b4f3.webp"),
       },
       top: {
         label: "윗면",
-        image: "/manus-storage/bernese-memorial-plush__top__v01_92149030.webp",
+        image: catalogImage("bernese-memorial-plush__top__v01.webp", "/manus-storage/bernese-memorial-plush__top__v01_92149030.webp"),
       },
     },
     memorialTag: {
@@ -59,11 +71,11 @@ export const referenceProducts: ReferenceProduct[] = [
       sides: {
         front: {
           label: "기념택 앞면",
-          image: "/manus-storage/bernese-memorial-tag__front__v01_43178df8.webp",
+          image: catalogImage("bernese-memorial-tag__front__v01.webp", "/manus-storage/bernese-memorial-tag__front__v01_43178df8.webp"),
         },
         back: {
           label: "기념택 뒷면",
-          image: "/manus-storage/bernese-memorial-tag__back__v01_25969fb6.webp",
+          image: catalogImage("bernese-memorial-tag__back__v01.webp", "/manus-storage/bernese-memorial-tag__back__v01_25969fb6.webp"),
         },
       },
     },
