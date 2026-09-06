@@ -1,11 +1,11 @@
 # Project TODO
 
-- [ ] Preserve and port the existing Three.js basic plush configurator, three-view contour tracing, part assembly, detail placement, GLB export, and PNG exports.
+- [ ] Preserve and port the existing Three.js basic plush configurator, three-view contour tracing, part assembly, detail placement, GLB export, and PNG exports. Basic-form control, part-aware 3D model, and GLB export are present; three-view tracing, placement, and PNG export remain pending.
 - [x] Configure the project identity, responsive design tokens, and elegant designer-facing information architecture using the plush-studio name.
 - [x] Create the Supabase project named plush-studio and document its project reference, environments, and non-secret connection requirements.
-- [ ] Create and apply the Supabase SQL schema for organizations, members, roles, projects, plush designs, parts, design versions, assets, BOM rows, cost scenarios, factory quotes, samples, QA checklists, QA inspections, approvals, and audit events.
+- [x] Create and apply the Supabase SQL schema for organizations, members, roles, projects, plush designs, parts, design versions, assets, BOM rows, cost scenarios, factory quotes, samples, QA checklists, QA inspections, approvals, and audit events.
 - [ ] Configure Supabase Auth, row-level security policies, private storage buckets, and signed-file access for project-scoped assets.
-- [ ] Configure Vercel project plush-studio with GitHub import, Preview and Production environment separation, and non-secret deployment documentation.
+- [ ] Configure Vercel project plush-studio with GitHub import, Preview and Production environment separation, and non-secret deployment documentation. GitHub import, Production deployment, and documentation are complete; a separate Preview data target remains pending.
 - [ ] Implement authenticated workspace navigation and role-aware access for brand administrators, designers, factories, and QC users.
 - [ ] Implement project lifecycle states: draft, internal review, factory quote request, sample review, purchase order confirmed, and production QA.
 - [ ] Implement persistent design projects, plush profiles, part specifications, design-version snapshots, approvals, and frozen-version safeguards.
@@ -15,9 +15,12 @@
 - [ ] Implement secure upload metadata and download paths for reference images, part images, GLB, PNG, PDF, and XLSX outputs.
 - [x] Implement Tech Pack PDF/XLSX export containing active version, BOM, dimensions, materials, construction notes, tolerances, and QA criteria.
 - [x] Add graceful WebGL and file-operation error handling, empty/loading states, and an accessible mobile-first responsive UI.
-- [ ] Add unit tests for permissions, lifecycle transitions, quote/cost calculations, BOM validation, and export payload validation.
+- [ ] Add unit tests for permissions, lifecycle transitions, quote/cost calculations, BOM validation, and export payload validation. Quote calculation and Supabase schema/API connection tests are complete; remaining domain tests are pending.
 - [ ] Add GitHub workflow, database migration log, deployed commit record, system architecture, operator runbook, and Vercel/Supabase hand-off documents.
 - [ ] Run TypeScript validation, unit tests, desktop and mobile visual review, database security checks, Preview deployment validation, and Production deployment validation.
-- [ ] Document explicit Supabase and Vercel Development, Preview, and Production environment mappings without storing secret values.
+- [x] Document explicit Supabase and Vercel Development, Preview, and Production environment mappings without storing secret values.
+- [ ] Configure distinct Vercel Preview and Production Supabase targets, then verify a Preview deployment does not write to production manufacturing data.
+- [ ] Update the operations runbook with the final, applied Preview and Production branch-to-database mapping after the staging Supabase project exists.
 - [ ] Add active-version, construction notes, and QA criteria payloads to both Tech Pack PDF and XLSX exports.
 - [ ] Add user-facing failure and loading states for GLB/PDF/XLSX exports and cloud saves, plus empty states for key data flows.
+- [x] Add a read-only Supabase schema validation test that verifies every required collaboration table, private asset bucket, and access-control function after migrations are applied.

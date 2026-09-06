@@ -31,7 +31,9 @@ Run migrations in the Supabase SQL Editor in lexical filename order. Copy every 
 | Order | File | Status | Purpose |
 |---|---|---|---|
 | 1 | `202609060001_plush_studio_foundation.sql` | Applied manually | Creates the role-aware collaboration schema, RLS policies, private bucket, audit events, and initial functions. |
-| 2 | `202609060002_add_part_material.sql` | Pending manual application | Adds the factory-facing material field used by the cloud-save feature. |
+| 2 | `202609060002_add_part_material.sql` | Applied and API-verified | Adds the factory-facing material field used by the cloud-save feature. |
+
+The read-only foundation verification executed successfully after migration application. It confirms all 21 required collaboration tables, the private `plush-studio` asset bucket, and these secured API RPC functions: `is_org_member`, `has_org_role`, `can_view_project`, `can_edit_project`, `can_manage_project`, `can_contribute_to_project`, `can_inspect_project`, and `is_bucket_path_member`.
 
 ## Production release checklist
 
@@ -45,4 +47,6 @@ Run migrations in the Supabase SQL Editor in lexical filename order. Copy every 
 
 ## 2026-09-06 release record
 
-The Vercel project **`plush-studio`** was created from `joeunjin1/plush-studio` with the `Other` preset. Its first deployment completed successfully from GitHub commit `6df2c4d` (`chore: preserve legacy 3d studio source`). The deployment URL is `https://plush-studio-40pvo3jqf-joeunjin1s-projects.vercel.app`. The project is connected to the `main` branch and the baseline project URL should be checked again after Vercel finishes assigning the stable alias.
+The Vercel project **`plush-studio`** was created from `joeunjin1/plush-studio` with the `Other` preset. Its first deployment completed successfully from GitHub commit `6df2c4d` (`chore: preserve legacy 3d studio source`). Its stable production URL is `https://plush-studio.vercel.app` and its immutable first deployment URL is `https://plush-studio-40pvo3jqf-joeunjin1s-projects.vercel.app`.
+
+GitHub commit `4497954` (`fix: align default BOM with 3d plush assembly`) then passed automatically through Vercel Production deployment and is live on the stable production URL. The live page was manually checked for loading, 3D basic-form selection, and the rule-based cost simulator; the initial BOM now includes eight 3D assembly components and produces the matching baseline target price of KRW 7,600.
