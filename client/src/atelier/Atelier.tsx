@@ -29,6 +29,8 @@ import {
   hydrate,
 } from "./storage";
 import { ProductPreview, saveBlob } from "./ProductPreview";
+import { FiveAngleReferencePreview } from "./FiveAngleReferencePreview";
+import { referenceProductById, referenceProducts } from "./referenceProducts";
 import { BuyerAuthGate } from "./BuyerAuthGate";
 import {
   buyerAccessPrompt,
@@ -60,6 +62,10 @@ function initialProjectFromUrl() {
     ? createProjectFromTemplate(candidate)
     : createProject();
 }
+function initialReferenceProductIdFromUrl() {
+  const id = new URLSearchParams(window.location.search).get("reference");
+  return referenceProductById(id)?.id ?? null;
+}
 export default function Atelier() {
   const [p, setP] = useState<Project>(initialProjectFromUrl),
     [tab, setTab] = useState("template"),
@@ -81,13 +87,15 @@ export default function Atelier() {
     }),
     [receipt, setReceipt] = useState(""),
     [protectedArtifact, setProtectedArtifact] = useState<ProtectedArtifact | null>(null),
-    [sidebarOpen, setSidebarOpen] = useState(false);
+    [sidebarOpen, setSidebarOpen] = useState(false),
+    [referenceProductId, setReferenceProductId] = useState<string | null>(initialReferenceProductIdFromUrl);
   const operation = useRef(false),
     requestId = useRef(newRequestId()),
     dirty = useRef(false);
   const current = useRef(p);
   current.current = p;
   const { user: buyer } = useBuyerSession();
+  const selectedReferenceProduct = referenceProductById(referenceProductId);
   useEffect(() => {
     const leave = (e: BeforeUnloadEvent) => {
       if (dirty.current) {
@@ -398,6 +406,38 @@ export default function Atelier() {
                 </button>
               </div>
             </fieldset>
+            <section className="at-reference-library" aria-label="공식 기준 상품 라이브러리">
+              <div className="at-reference-library-heading">
+                <span>REFERENCE PRODUCT LIBRARY</span>
+                <p>실사 5면 기준 상품</p>
+              </div>
+              {referenceProducts.map(product => (
+                <button
+                  aria-pressed={referenceProductId === product.id}
+                  className="at-reference-product-card"
+                  key={product.id}
+                  onClick={() => {
+                    setReferenceProductId(product.id);
+                    setSidebarOpen(false);
+                  }}
+                >
+                  <img alt="" src={product.views.front.image} />
+                  <span>
+                    <b>{product.title}</b>
+                    <small>{product.sku}</small>
+                    <small>{product.reviewLabel}</small>
+                  </span>
+                </button>
+              ))}
+              {selectedReferenceProduct && (
+                <button
+                  className="at-reference-return"
+                  onClick={() => setReferenceProductId(null)}
+                >
+                  기본 3D 편집기로 돌아가기
+                </button>
+              )}
+            </section>
             <fieldset disabled={busy} className="at-controls">
             <nav>
               {[
@@ -1080,8 +1120,8 @@ export default function Atelier() {
           <section className="at-workspace-stage" aria-label="제품 프리뷰">
             <div className="at-stage-header">
               <div>
-                <span>{getTemplate(p.templateId!).label}</span>
-                <b>{p.width} × {p.height} × {p.depth} cm</b>
+                <span>{selectedReferenceProduct ? "공식 5면 기준 상품" : getTemplate(p.templateId!).label}</span>
+                <b>{selectedReferenceProduct ? selectedReferenceProduct.title : `${p.width} × ${p.height} × ${p.depth} cm`}</b>
               </div>
               <div>
                 <button
@@ -1097,14 +1137,21 @@ export default function Atelier() {
                 </button>
               </div>
             </div>
-            <ProductPreview
-              authenticated={Boolean(buyer)}
-              onMessage={setMessage}
-              onProtectedExport={recordExport}
-              onRequireAuthentication={artifact => requireBuyer(artifact)}
-              project={p}
-            />
-            <div className="at-backups">
+            {selectedReferenceProduct ? (
+              <FiveAngleReferencePreview
+                onMessage={setMessage}
+                product={selectedReferenceProduct}
+              />
+            ) : (
+              <ProductPreview
+                authenticated={Boolean(buyer)}
+                onMessage={setMessage}
+                onProtectedExport={recordExport}
+                onRequireAuthentication={artifact => requireBuyer(artifact)}
+                project={p}
+              />
+            )}
+            {!selectedReferenceProduct && <div className="at-backups">
               <button
                 disabled={busy}
                 onClick={() => {
@@ -1173,11 +1220,11 @@ export default function Atelier() {
               >
                 복사본 만들기
               </button>
-            </div>
-            <p className="at-help">
+            </div>}
+            {!selectedReferenceProduct && <p className="at-help">
               이 기기 저장은 브라우저 데이터 삭제 시 사라질 수 있습니다. 다른
               기기에서도 쓰려면 클라우드 저장 또는 전체 백업을 이용하세요.
-            </p>
+            </p>}
           </section>
         </div>
         {shelf && (

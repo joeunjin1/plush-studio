@@ -77,8 +77,12 @@
 - [x] Extend the rounded multi-part primary body treatment to rabbit, cat, keyring, and cushion templates while retaining their distinctive proportions and existing parameter behavior.
 - [x] Add baseline visual regression assertions for rabbit ear-angle responsiveness and representative Bear·Tote·Regular Tee fallback performance budgets.
 - [x] Extend quality regression assertions to every visual parameter mapping and every template manifest's mobile/desktop fallback performance budget.
-- [ ] Replace the tall Product Atelier hero and horizontal control band with a compact workspace header, a desktop left sidebar, and a dominant central product viewer; provide an accessible mobile drawer without reducing preview priority.
-- [ ] Reorganize template selection, dimensions, materials, structures, readiness, and protected actions into a clear sidebar workflow with persistent current-product context and no fabricated product imagery.
+- [x] Replace the tall Product Atelier hero and horizontal control band with a compact workspace header, a desktop left sidebar, and a dominant central product viewer; provide an accessible mobile drawer without reducing preview priority.
+- [x] Reorganize template selection, dimensions, materials, structures, readiness, and protected actions into a clear sidebar workflow with persistent current-product context and no fabricated product imagery.
 - [ ] Add a product reference library domain model that records seller-supplied orthographic photo sets, source status, product family, version, review state, and target 3D template without storing image bytes in the database.
 - [ ] Implement an authenticated reference-photo intake flow that accepts front, side, back, top, and optional detail views, validates image set completeness, and makes only reviewed seller assets selectable for buyer-facing templates.
-- [ ] Publish a seller photo-capture guide covering neutral lighting, fixed distance, orthographic views, scale reference, filename convention, and rights confirmation for the first Basic Bear reference set.
+- [x] Publish a seller photo-capture guide covering neutral lighting, fixed distance, orthographic views, scale reference, filename convention, and rights confirmation for the first Basic Bear reference set.
+- [ ] Register the provided Bernese Mountain Dog lying-plush as a unique official reference product with five-angle imagery, a rights/status record, and customer-selectable product metadata.
+- [ ] Add replaceable memorial-tag options so a buyer can choose the tag face, enter a constrained commemorative message, and preview its placement without treating personalized text as a factory-approved production file.
+- [ ] Create a reusable five-angle product-view system that renders uploaded front, left, rear, right, and top reference images as view-locked virtual 3D rotation states with explicit photo-based-preview limitations.
+- [ ] Add product-registration fields for SKU uniqueness, category, color option, physical dimensions, carton dimensions, and calculated CBM before opening the reviewed product library to buyers.

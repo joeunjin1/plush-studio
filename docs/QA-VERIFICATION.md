@@ -27,3 +27,9 @@ The extended core-product pass also visually checked Rabbit, Cat, Keyring, and C
 ## 2026-09-06 — Product-first workspace shell
 
 The desktop review at 1536 × 864 confirmed that the former hero and horizontal editing band no longer consume the primary workspace. The left column holds template, save, and step controls while the product stage occupies the dominant central area. The 390 × 844 mobile review showed the product first, with an explicit 44px edit trigger opening the control drawer instead of reducing the preview canvas. This layout change has local visual and automated validation only until the next staging Preview is reviewed.
+
+## 2026-09-06 — Bernese memorial reference product
+
+The supplied Bernese Mountain Dog five-view board was deterministically separated into front, left, rear, right, top, and both blank memorial-tag faces. The first local preview through a standalone Vite server returned SPA HTML for `/manus-storage/*` paths and therefore showed broken images. The Product Atelier development command was restored to the Express/Vite bridge, where the registered storage proxy returns a signed asset redirect before the SPA fallback. The 1536 × 864 review then confirmed that the official reference card and full front reference image load correctly. The product view remains expressly labelled as a view-locked photo-based virtual 3D preview, not a production-grade GLB digital twin.
+
+At 1280 × 900, the stage showed the full front image with direct front/left/rear/right/top controls, a five-view auto-rotation control, and a separate blank tag preview below it. At 390 × 844, the product image remains the first large element, the five view controls form touch-safe two-column buttons, and the memorial-tag face selector, constrained text area, and tag preview stack without horizontal clipping.
