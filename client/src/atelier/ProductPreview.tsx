@@ -9,7 +9,39 @@ import { materialAppearance, resolveTemplateParts, visualTemplateProfile } from 
 import { buildDesignProof, buildProofExportPlan } from "./designProof";
 import type { ProtectedArtifact } from "./buyerAccess";
 
-const BASIC_BEAR_FABRIC_TEXTURE = "/manus-storage/basic-bear-plush-fabric-texture_d4de02c5.png";
+function createPlushTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const context = canvas.getContext("2d");
+  if (!context) return null;
+  context.fillStyle = "#b77948";
+  context.fillRect(0, 0, 512, 512);
+  let seed = 2463534242;
+  const next = () => {
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    return (seed >>> 0) / 4294967296;
+  };
+  for (let index = 0; index < 1800; index++) {
+    const x = next() * 512;
+    const y = next() * 512;
+    const length = 2 + next() * 7;
+    context.strokeStyle = next() > 0.5 ? "rgba(255,236,203,0.13)" : "rgba(78,42,23,0.12)";
+    context.lineWidth = 0.45 + next() * 0.75;
+    context.beginPath();
+    context.moveTo(x, y);
+    context.lineTo(x + length, y + (next() - 0.5) * 1.8);
+    context.stroke();
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2.6, 2.6);
+  return texture;
+}
 export function saveBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob),
     a = document.createElement("a");
@@ -215,33 +247,15 @@ export function ProductPreview({
       setTexturesReady(p.decals.length === 0 && !needsBearFabric);
       let pending = p.decals.length + (needsBearFabric ? 1 : 0);
       if (needsBearFabric) {
-        new THREE.TextureLoader().load(
-          BASIC_BEAR_FABRIC_TEXTURE,
-          texture => {
-            if (cancelled) {
-              texture.dispose();
-              return;
-            }
-            texture.colorSpace = THREE.SRGBColorSpace;
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(2.6, 2.6);
-            const material = body.material;
-            if (material instanceof THREE.MeshPhysicalMaterial) {
-              material.map = texture;
-              material.needsUpdate = true;
-            } else {
-              texture.dispose();
-            }
-            if (--pending === 0) setTexturesReady(true);
-          },
-          undefined,
-          () => {
-            if (cancelled) return;
-            onMessage("플러시 원단 텍스처를 불러오지 못해 개념 재질로 표시합니다.");
-            if (--pending === 0) setTexturesReady(true);
-          }
-        );
+        const texture = createPlushTexture();
+        const material = body.material;
+        if (texture && material instanceof THREE.MeshPhysicalMaterial) {
+          material.map = texture;
+          material.needsUpdate = true;
+        } else {
+          onMessage("플러시 원단 질감을 만들지 못해 기본 재질로 표시합니다.");
+        }
+        if (--pending === 0) setTexturesReady(true);
       }
       p.decals.forEach(decal => {
         const asset = p.assets.find(a => a.id === decal.assetId);

@@ -106,6 +106,14 @@ export function shapeGeometry(
   return geometry;
 }
 export function productGeometry(p: Project) {
+  if (p.templateId === "bear") {
+    const geometry = new THREE.SphereGeometry(1, 64, 48);
+    geometry.scale(p.width * 0.36, p.height * 0.5, p.depth * 0.46);
+    geometry.translate(0, p.height * 0.01, 0);
+    geometry.computeVertexNormals();
+    geometry.computeBoundingBox();
+    return geometry;
+  }
   return shapeGeometry(
     p.useOutline ? p.front : outlines[p.product],
     p.useOutline

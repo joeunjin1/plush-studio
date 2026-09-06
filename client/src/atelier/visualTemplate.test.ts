@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { visualTemplateProfile } from "./productDefinition";
+import { templateIds, visualTemplateProfile } from "./productDefinition";
 
 describe("visual template profiles", () => {
   it("marks the first enhanced Bear experience as a prototype rather than a factory-validated digital twin", () => {
@@ -17,5 +17,25 @@ describe("visual template profiles", () => {
     expect(visualTemplateProfile("tote").level).toBe("concept");
     expect(visualTemplateProfile("tee-regular").printZoneMode).toBe("procedural");
     expect(visualTemplateProfile("tote").proofEligibility).toBe("exploratory");
+  });
+
+  it("keeps every template anchor and UV print zone within its declared digital-preview contract", () => {
+    for (const templateId of templateIds) {
+      const profile = visualTemplateProfile(templateId);
+      expect(profile.proofEligibility).not.toBe("factory-release");
+      expect(profile.attachmentAnchors.length).toBeGreaterThan(0);
+      expect(profile.attachmentAnchors.every(anchor => anchor.node.startsWith("PART_"))).toBe(true);
+      expect(profile.attachmentAnchors.every(anchor => anchor.allowed.length > 0)).toBe(true);
+      expect(profile.uvPrintZones.length).toBeGreaterThan(0);
+      for (const zone of profile.uvPrintZones) {
+        expect(zone.meshNode).toBe("PART_body");
+        expect(zone.uv.uMin).toBeGreaterThanOrEqual(0);
+        expect(zone.uv.vMin).toBeGreaterThanOrEqual(0);
+        expect(zone.uv.uMax).toBeLessThanOrEqual(1);
+        expect(zone.uv.vMax).toBeLessThanOrEqual(1);
+        expect(zone.uv.uMin).toBeLessThan(zone.uv.uMax);
+        expect(zone.uv.vMin).toBeLessThan(zone.uv.vMax);
+      }
+    }
   });
 });
