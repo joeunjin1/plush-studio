@@ -1134,3 +1134,4 @@
 .cs-preview:has(.three-fallback) .cs-view-tabs {
   display: none;
 }
+.cs-quote-box{border:1px solid #dce4d6;background:#f7f9f3;border-radius:10px;padding:18px;margin:18px 0}.cs-quote-box h3{font-size:15px;font-weight:650}.request-design{margin:15px 0}.request-design .cs-secondary{font-size:11px;min-height:35px;padding:8px;margin:4px}.cs-request-card>div{min-width:0;flex:1}@media(max-width:640px){.cs-header{height:auto;min-height:72px;flex-wrap:wrap;padding:14px 18px;gap:10px}.cs-header nav{width:100%;justify-content:space-between}.cs-request-card{align-items:flex-start}}

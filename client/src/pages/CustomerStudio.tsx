@@ -26,8 +26,11 @@ import {
   type RequestRow,
 } from "@/lib/customerRequest";
 import { newRequestId } from "@/lib/requestId";
+import { RequestDesign } from "@/components/RequestDesign";
+import { RequestQuote } from "@/components/RequestQuote";
 import { RequestInbox } from "@/components/RequestInbox";
 import "./customer.css";
+const Atelier = lazy(() => import("@/atelier/Atelier"));
 const Workspace = lazy(() => import("./Home"));
 const defaults: CustomerDraft = {
   design: { ...initialDesign, name: "나만의 인형", color: "#c49378" },
@@ -158,6 +161,7 @@ export default function CustomerStudio() {
     [busy, setBusy] = useState(false),
     [receipt, setReceipt] = useState(""),
     [rows, setRows] = useState<RequestRow[]>([]),
+    [requestReload, setRequestReload] = useState(0),
     [loading, setLoading] = useState(false),
     [view, setView] = useState<"perspective" | "front" | "side" | "back">(
       "perspective"
@@ -169,13 +173,15 @@ export default function CustomerStudio() {
   useEffect(() => {
     const onHash = () =>
       setScreen(
-        window.location.hash === "#inbox"
-          ? "inbox"
-          : window.location.hash === "#workspace"
-            ? "workspace"
-            : window.location.hash === "#requests"
-              ? "requests"
-              : "design"
+        window.location.hash === "#atelier"
+          ? "atelier"
+          : window.location.hash === "#inbox"
+            ? "inbox"
+            : window.location.hash === "#workspace"
+              ? "workspace"
+              : window.location.hash === "#requests"
+                ? "requests"
+                : "design"
       );
     onHash();
     window.addEventListener("hashchange", onHash);
@@ -230,7 +236,7 @@ export default function CustomerStudio() {
     return () => {
       active = false;
     };
-  }, [screen, user]);
+  }, [screen, user, requestReload]);
   const edit = (patch: Partial<CustomerDraft>) => {
     setDraft(d => ({ ...d, ...patch }));
     requestId.current = newRequestId();
@@ -340,6 +346,7 @@ export default function CustomerStudio() {
         plush studio<span className="cs-logo-dot">®</span>
       </a>
       <nav aria-label="주 메뉴">
+        <a href="#atelier">삼면도 · 가방 · 티셔츠</a>
         <a
           href="#design"
           aria-current={screen === "design" ? "page" : undefined}
@@ -358,6 +365,12 @@ export default function CustomerStudio() {
       </nav>
     </header>
   );
+  if (screen === "atelier")
+    return (
+      <Suspense fallback={<p>제품 편집기를 여는 중…</p>}>
+        <Atelier />
+      </Suspense>
+    );
   if (screen === "workspace")
     return (
       <>
@@ -401,14 +414,17 @@ export default function CustomerStudio() {
             ) : (
               rows.map(r => (
                 <article className="cs-request-card" key={r.id}>
-                  <PlushIllustration design={r.design} compact />
+                  {!r.product_snapshot && (
+                    <PlushIllustration design={r.design} compact />
+                  )}
                   <div>
                     <span className="cs-tag">
                       {statusNames[r.status] ?? r.status}
                     </span>
                     <h2>{r.design.name}</h2>
                     <p>
-                      {r.design.heightCm}cm · {r.quantity.toLocaleString()}개 ·{" "}
+                      {r.product_snapshot?.height ?? r.design.heightCm}cm ·{" "}
+                      {r.quantity.toLocaleString()}개 ·{" "}
                       {r.purpose === "sample" ? "샘플 먼저" : "수량 제작 상담"}
                     </p>
                     <small>
@@ -417,6 +433,14 @@ export default function CustomerStudio() {
                     </small>
                     <details>
                       <summary>요청 내용 보기</summary>
+                      <RequestDesign
+                        snapshot={r.product_snapshot}
+                        requestId={r.id}
+                      />
+                      <RequestQuote
+                        row={r}
+                        onChange={() => setRequestReload(v => v + 1)}
+                      />
                       <p>{r.notes || "추가 요청 없음"}</p>
                       {r.references?.map(f => (
                         <p key={f.path}>

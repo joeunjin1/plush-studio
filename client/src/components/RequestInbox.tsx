@@ -1,3 +1,5 @@
+import { RequestDesign } from "./RequestDesign";
+import { RequestQuote } from "./RequestQuote";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
@@ -80,13 +82,20 @@ export function RequestInbox({ user }: { user: User | null }) {
             {row.phone || "전화번호 없음"}
           </p>
           <p>
-            {row.design.heightCm}cm · {row.quantity}개 · {row.material} ·{" "}
+            {row.product_snapshot?.height ?? row.design.heightCm}cm ·{" "}
+            {row.quantity}개 · {row.material} ·{" "}
             {row.purpose === "sample" ? "샘플 먼저" : "수량 제작 견적"}
           </p>
           <p style={{ whiteSpace: "pre-wrap" }}>
             {row.notes || "추가 요청 없음"}
           </p>
           <small>접수번호 {row.id}</small>
+          <RequestDesign snapshot={row.product_snapshot} requestId={row.id} />
+          <RequestQuote
+            row={row}
+            staff
+            onChange={() => setReload(r => r + 1)}
+          />
           <label className="cs-field">
             <span>진행 상태</span>
             <select
@@ -115,7 +124,11 @@ export function RequestInbox({ user }: { user: User | null }) {
               }}
             >
               {Object.entries(statusNames).map(([value, label]) => (
-                <option key={value} value={value}>
+                <option
+                  key={value}
+                  value={value}
+                  disabled={value === "confirmed" || value === "quoted"}
+                >
                   {label}
                 </option>
               ))}

@@ -42,6 +42,11 @@ export type ReferenceFile = {
   position: string;
 };
 export type RequestRow = {
+  product_snapshot?: import("@/atelier/project").Project | null;
+  quote_amount_krw?: number | null;
+  quote_lead_days?: number | null;
+  quote_note?: string | null;
+  quote_version?: number;
   id: string;
   created_at: string;
   status: string;
@@ -113,22 +118,20 @@ export async function sendCustomerRequest(
       position: item.position,
     });
   }
-  const { error } = await supabase
-    .from("customer_requests")
-    .insert({
-      id,
-      customer_id: user.id,
-      customer_name: person.name,
-      contact_email: user.email,
-      phone: person.phone,
-      design: valid.design,
-      quantity: valid.quantity,
-      material: valid.material,
-      purpose: valid.purpose,
-      notes: valid.notes,
-      references,
-      consent_version: "request-v1",
-    });
+  const { error } = await supabase.from("customer_requests").insert({
+    id,
+    customer_id: user.id,
+    customer_name: person.name,
+    contact_email: user.email,
+    phone: person.phone,
+    design: valid.design,
+    quantity: valid.quantity,
+    material: valid.material,
+    purpose: valid.purpose,
+    notes: valid.notes,
+    references,
+    consent_version: "request-v1",
+  });
   if (error)
     throw Error(
       "접수 확인을 받지 못했습니다. 같은 버튼으로 다시 시도하면 중복 접수를 방지합니다."
