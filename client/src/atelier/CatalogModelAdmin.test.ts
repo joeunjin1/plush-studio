@@ -22,4 +22,9 @@ describe("protected owner GLB intake screen", () => {
     expect(source).toContain('modelError.code === "42P01"');
     expect(source).toContain("관리자 로그인 링크 받기");
   });
+
+  it("reuses the established magic-link redirect and error classification", () => {
+    expect(source).toContain("emailRedirectTo: buyerEmailRedirectUrl()");
+    expect(source).toContain("buyerMagicLinkErrorMessage(error)");
+  });
 });

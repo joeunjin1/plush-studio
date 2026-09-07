@@ -113,3 +113,4 @@
 - [x] Add a non-destructive staging SQL migration for owner-supplied GLB metadata, review gates, single-current-version enforcement, and buyer-visible publication constraints without storing binary content; the owner must apply migration 012 to staging before the contract is live.
 - [x] Build a protected staging administrator GLB intake screen that uploads only authenticated brand-admin sources to private organization-scoped storage and records a non-public draft metadata row; authenticated brand-admin UAT awaits migration 012 and owner login.
 - [x] Fix the PostgreSQL record-variable `INTO` syntax error in migration 012, revalidate the SQL contract, and provide a staging-only retry file before resuming administrator UAT.
+- [ ] Diagnose and minimally fix the staging administrator Magic Link send failure, preserving existing authentication, membership permissions, and Production settings.

@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Boxes, FileUp, HardDrive, LockKeyhole, RefreshCw, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
+  buyerEmailRedirectUrl,
+  buyerMagicLinkErrorMessage,
+} from "./buyerAccess";
+import {
   analyzeOwnerGlb,
   ownerGlbMimeType,
   ownerGlbPerformanceMessage,
@@ -148,9 +152,9 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/#catalog-admin` },
+        options: { emailRedirectTo: buyerEmailRedirectUrl() },
       });
-      setMessage(error ? "로그인 링크를 보내지 못했습니다. 잠시 후 다시 시도해 주세요." : "관리자 로그인 링크를 이메일로 보냈습니다. 인증 후 이 화면으로 돌아옵니다.");
+      setMessage(error ? buyerMagicLinkErrorMessage(error) : "관리자 로그인 링크를 이메일로 보냈습니다. 인증 후 이 화면으로 돌아옵니다.");
     } catch {
       setMessage("네트워크 연결을 확인한 뒤 다시 시도해 주세요.");
     } finally {
