@@ -31,6 +31,7 @@ import { RequestQuote } from "@/components/RequestQuote";
 import { RequestInbox } from "@/components/RequestInbox";
 import "./customer.css";
 const Atelier = lazy(() => import("@/atelier/Atelier"));
+const CatalogModelAdmin = lazy(() => import("@/atelier/CatalogModelAdmin"));
 const Workspace = lazy(() => import("./Home"));
 const defaults: CustomerDraft = {
   design: { ...initialDesign, name: "나만의 인형", color: "#c49378" },
@@ -173,7 +174,9 @@ export default function CustomerStudio() {
   useEffect(() => {
     const onHash = () =>
       setScreen(
-        window.location.hash === "#atelier"
+        window.location.hash === "#catalog-admin"
+          ? "catalog-admin"
+          : window.location.hash === "#atelier"
           ? "atelier"
           : window.location.hash === "#inbox"
             ? "inbox"
@@ -369,6 +372,12 @@ export default function CustomerStudio() {
     return (
       <Suspense fallback={<p>제품 편집기를 여는 중…</p>}>
         <Atelier />
+      </Suspense>
+    );
+  if (screen === "catalog-admin")
+    return (
+      <Suspense fallback={<p>관리자 상품 마스터를 여는 중…</p>}>
+        <CatalogModelAdmin user={user} />
       </Suspense>
     );
   if (screen === "workspace")

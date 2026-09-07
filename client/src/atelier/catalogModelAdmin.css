@@ -1,0 +1,98 @@
+.at-model-admin {
+  background: var(--at-page);
+  color: var(--at-ink);
+  min-height: 100dvh;
+  padding: 1.25rem;
+}
+.at-model-admin-header {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0 auto 1rem;
+  max-width: 82rem;
+}
+.at-model-admin-header > div > span,
+.at-model-admin-card-heading span,
+.at-model-admin-login > p {
+  color: var(--at-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.at-model-admin h1,
+.at-model-admin h2,
+.at-model-admin p { margin-top: 0; }
+.at-model-admin h1 { font-size: clamp(1.6rem, 4vw, 2.5rem); letter-spacing: -0.04em; margin-bottom: 0.4rem; }
+.at-model-admin h2 { font-size: 1.05rem; margin-bottom: 0; }
+.at-model-admin-header p { color: var(--at-muted); margin-bottom: 0; max-width: 48rem; }
+.at-model-admin-header > button { align-self: stretch; }
+.at-model-admin-guard,
+.at-model-admin-message,
+.at-model-admin-card,
+.at-model-admin-login {
+  background: var(--at-card);
+  border: 1px solid var(--at-line);
+  border-radius: 1rem;
+}
+.at-model-admin-guard {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.7rem;
+  margin: 0 auto 1rem;
+  max-width: 82rem;
+  padding: 0.9rem 1rem;
+}
+.at-model-admin-guard svg { color: var(--at-accent); flex: 0 0 auto; margin-top: 0.08rem; }
+.at-model-admin-guard p { font-size: 0.85rem; margin-bottom: 0; }
+.at-model-admin-message { margin: 0 auto 1rem; max-width: 82rem; padding: 0.8rem 1rem; }
+.at-model-admin-layout { display: grid; gap: 1rem; margin: 0 auto; max-width: 82rem; }
+.at-model-admin-card { min-width: 0; padding: 1rem; }
+.at-model-admin-card-heading { align-items: flex-start; display: flex; gap: 0.65rem; margin-bottom: 1rem; }
+.at-model-admin-card-heading svg { color: var(--at-accent); flex: 0 0 auto; margin-top: 0.1rem; }
+.at-model-admin-fields { display: grid; gap: 0.85rem; }
+.at-model-admin-fields label { display: grid; gap: 0.35rem; font-size: 0.82rem; font-weight: 650; }
+.at-model-admin-fields input,
+.at-model-admin-fields select,
+.at-model-admin-login input {
+  background: var(--at-page);
+  border: 1px solid var(--at-line);
+  border-radius: 0.65rem;
+  color: var(--at-ink);
+  font: inherit;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.75rem;
+  width: 100%;
+}
+.at-model-admin-analysis { background: var(--at-soft); border-radius: 0.75rem; display: grid; gap: 0.8rem; margin: 1rem 0; padding: 0.85rem; }
+.at-model-admin-analysis div { display: grid; gap: 0.15rem; min-width: 0; }
+.at-model-admin-analysis span,
+.at-model-admin-analysis small,
+.at-model-admin-footnote,
+.at-model-admin-table small,
+.at-model-admin-empty span { color: var(--at-muted); font-size: 0.74rem; }
+.at-model-admin-analysis b { font-size: 0.82rem; overflow-wrap: anywhere; }
+.at-model-admin-submit { width: 100%; }
+.at-model-admin-footnote { display: block; line-height: 1.5; margin-top: 0.65rem; }
+.at-model-admin-table { overflow-x: auto; }
+.at-model-admin-table table { border-collapse: collapse; font-size: 0.8rem; min-width: 38rem; width: 100%; }
+.at-model-admin-table th { color: var(--at-muted); font-size: 0.68rem; letter-spacing: 0.06em; text-align: left; }
+.at-model-admin-table th,
+.at-model-admin-table td { border-bottom: 1px solid var(--at-line); padding: 0.6rem 0.45rem; vertical-align: top; }
+.at-model-admin-table td small { display: block; margin-top: 0.15rem; }
+.at-model-admin-status { background: var(--at-soft); border-radius: 99rem; display: inline-flex; font-size: 0.68rem; padding: 0.22rem 0.42rem; }
+.at-model-admin-empty { align-items: center; color: var(--at-muted); display: flex; flex-direction: column; justify-content: center; min-height: 14rem; padding: 1rem; text-align: center; }
+.at-model-admin-empty p { color: var(--at-ink); font-weight: 650; margin: 0.65rem 0 0.2rem; }
+.at-model-admin-login { display: grid; gap: 0.9rem; margin: min(16dvh, 7rem) auto 0; max-width: 30rem; padding: 1.4rem; }
+.at-model-admin-login > svg { color: var(--at-accent); }
+.at-model-admin-login > span { color: var(--at-muted); font-size: 0.9rem; line-height: 1.6; }
+.at-model-admin-login form { display: grid; gap: 0.55rem; }
+.at-model-admin-login form label { font-size: 0.85rem; font-weight: 650; }
+@media (min-width: 48rem) {
+  .at-model-admin { padding: 2rem; }
+  .at-model-admin-header { align-items: flex-end; flex-direction: row; justify-content: space-between; }
+  .at-model-admin-header > button { align-self: auto; }
+  .at-model-admin-layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); }
+  .at-model-admin-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .at-model-admin-analysis { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
