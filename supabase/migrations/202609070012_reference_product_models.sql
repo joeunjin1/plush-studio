@@ -66,6 +66,7 @@ create index if not exists reference_product_models_review_idx
 
 alter table public.reference_product_models enable row level security;
 
+drop policy if exists "reference_product_models_read_current_public_or_admin" on public.reference_product_models;
 create policy "reference_product_models_read_current_public_or_admin" on public.reference_product_models
   for select using (
     exists (
@@ -85,6 +86,7 @@ create policy "reference_product_models_read_current_public_or_admin" on public.
     )
   );
 
+drop policy if exists "reference_product_models_insert_admin" on public.reference_product_models;
 create policy "reference_product_models_insert_admin" on public.reference_product_models
   for insert to authenticated
   with check (
@@ -97,6 +99,7 @@ create policy "reference_product_models_insert_admin" on public.reference_produc
     )
   );
 
+drop policy if exists "reference_product_models_update_admin" on public.reference_product_models;
 create policy "reference_product_models_update_admin" on public.reference_product_models
   for update to authenticated
   using (
@@ -116,6 +119,7 @@ create policy "reference_product_models_update_admin" on public.reference_produc
     )
   );
 
+drop policy if exists "reference_product_models_delete_admin" on public.reference_product_models;
 create policy "reference_product_models_delete_admin" on public.reference_product_models
   for delete to authenticated
   using (
@@ -135,6 +139,13 @@ set search_path = public
 as $$
 declare
   selected_model public.reference_product_models%rowtype;
+  target_reference_product_id uuid;
+  target_model_review_state text;
+  target_checksum_verification_state text;
+  target_checksum_verified_at timestamptz;
+  target_model_reviewed_at timestamptz;
+  target_published_storage_bucket text;
+  target_published_storage_path text;
   target_organization_id uuid;
   target_product_review_state text;
   target_product_visible boolean;
@@ -145,13 +156,25 @@ begin
   end if;
 
   select
-    model,
+    model.reference_product_id,
+    model.review_state,
+    model.checksum_verification_state,
+    model.checksum_verified_at,
+    model.reviewed_at,
+    model.published_storage_bucket,
+    model.published_storage_path,
     product.organization_id,
     product.review_status,
     product.visible_to_buyers,
     product.rights_confirmed_at
   into
-    selected_model,
+    target_reference_product_id,
+    target_model_review_state,
+    target_checksum_verification_state,
+    target_checksum_verified_at,
+    target_model_reviewed_at,
+    target_published_storage_bucket,
+    target_published_storage_path,
     target_organization_id,
     target_product_review_state,
     target_product_visible,
@@ -172,12 +195,12 @@ begin
   if target_product_review_state <> 'approved'
     or not target_product_visible
     or target_product_rights_confirmed_at is null
-    or selected_model.review_state <> 'approved'
-    or selected_model.checksum_verification_state <> 'verified'
-    or selected_model.checksum_verified_at is null
-    or selected_model.reviewed_at is null
-    or selected_model.published_storage_bucket <> 'plush-studio-catalog'
-    or selected_model.published_storage_path is null then
+    or target_model_review_state <> 'approved'
+    or target_checksum_verification_state <> 'verified'
+    or target_checksum_verified_at is null
+    or target_model_reviewed_at is null
+    or target_published_storage_bucket <> 'plush-studio-catalog'
+    or target_published_storage_path is null then
     raise exception 'Approved product, verified model, and reviewed public catalog path are required before publication' using errcode = '23514';
   end if;
 
@@ -186,8 +209,8 @@ begin
       visible_to_buyers = false,
       published_at = null,
       published_by = null
-  where reference_product_id = selected_model.reference_product_id
-    and id <> selected_model.id
+  where reference_product_id = target_reference_product_id
+    and id <> target_model_id
     and is_current;
 
   update public.reference_product_models
@@ -206,6 +229,7 @@ grant select on public.reference_product_models to anon, authenticated;
 grant insert, update, delete on public.reference_product_models to authenticated;
 grant execute on function public.publish_reference_product_model(uuid) to authenticated;
 
+drop trigger if exists set_reference_product_models_updated_at on public.reference_product_models;
 create trigger set_reference_product_models_updated_at
   before update on public.reference_product_models
   for each row execute procedure public.set_updated_at();

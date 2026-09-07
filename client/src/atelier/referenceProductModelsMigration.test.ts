@@ -26,4 +26,16 @@ describe("reference product model registration migration", () => {
     expect(migration).toContain("published_storage_bucket = 'plush-studio-catalog'");
     expect(migration).toContain("publish_reference_product_model");
   });
+
+  it("uses scalar fields for the multi-item publication lookup", () => {
+    expect(migration).toContain("target_reference_product_id,");
+    expect(migration).not.toContain("selected_model,\n    target_organization_id");
+    expect(migration).toContain("returning * into selected_model");
+  });
+
+  it("can be retried safely after a SQL-editor partial execution", () => {
+    expect(migration).toContain('drop policy if exists "reference_product_models_read_current_public_or_admin"');
+    expect(migration).toContain('drop policy if exists "reference_product_models_insert_admin"');
+    expect(migration).toContain('drop trigger if exists set_reference_product_models_updated_at');
+  });
 });

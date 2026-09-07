@@ -32,3 +32,7 @@
 현재 Bernese memorial plush v02는 staging public catalog에 대표 제공 원본으로 이미 등록되어 시각 UAT를 통과했습니다. 그러나 이 문서와 migration 012는 **후속 상품부터 적용할 정식 메타데이터 등록 계약**입니다. v02를 이 테이블에 소급 등록하려면, 대표가 private 원본 보존 경로와 SKU의 조직 소유 관계를 먼저 확인한 뒤 staging에서만 별도 등록합니다.
 
 Production 전환은 별도 승인 절차입니다. staging SQL 적용, private 원본 업로드, 독립 해시 검증, public 승인 복사본 확인, 5면 사진 폴백 및 모바일 UAT를 Production에서 다시 수행하기 전에는 `main` 병합이나 Production 자산 교체를 진행하지 않습니다.
+
+## Migration 012 재실행 원칙
+
+SQL Editor에서 하나의 긴 스크립트가 중간 오류로 멈추면 실행 방식에 따라 이전 DDL 일부가 남을 수 있습니다. migration 012는 테이블·인덱스에는 `if not exists`를 사용하고, 정책·트리거는 먼저 `drop ... if exists` 한 뒤 다시 만듭니다. 따라서 **수정된 동일 파일 전체를 staging SQL Editor에서 처음부터 다시 실행**해도 기존 buyer 데이터나 private 파일을 삭제하지 않으며, 새 GLB 메타데이터 테이블과 정책만 정합 상태로 맞춥니다. Production에서는 실행하지 않습니다.
