@@ -49,3 +49,11 @@ The owner uploaded the final independent back and top photographs under the curr
 ## 2026-09-07 — Customer-preview accuracy safeguard
 
 User review correctly found that the continuous Bernese concept model did not yet match the supplied product, despite providing a smooth interaction. The customer-facing `3D 컨셉 회전` control has therefore been removed. The catalog retains the verified five reference photographs with preloading and directional crossfades; the exploratory concept code is not exposed to buyers. A product-specific model must pass owner review against the supplied five views before any 3D rotation control is returned to the buyer-facing experience.
+
+## 2026-09-07 — Owner-supplied Bernese GLB v02 staging UAT
+
+The owner-supplied replacement source was stored only in the staging public catalog bucket at `bernese-memorial-plush/3d/berner_plush_360_v02.glb`. Read-only analysis identified one mesh, one material, one embedded texture, UV0 and normals, no animations, approximately 103,553 triangles, and a 6,547,424-byte source size. The remote object returned HTTP 200 with `model/gltf-binary`; its downloaded bytes match the owner source exactly with SHA-256 `eeebf4aba5861150ae0eca006cf85bb7d0583e7b9400c15ff60ac2106ac647d5`.
+
+Commit `eb779a0` adds the versioned source mapping, dynamic `model-viewer` loading, drag/zoom and auto-rotation controls, loading feedback, and automatic fallback to the official five-view photographs on model-load failure. Automated validation passed with 34 test files, 94 passing tests, and 2 existing skips; TypeScript and production builds also passed. Vercel reported the `staging` Preview deployment successful.
+
+The owner then visually verified the new staging 3D view and confirmed it was normal. This confirms staging viewer delivery of the supplied v02 source, not physical-product accuracy, factory/sample approval, or a production-grade digital-twin certification. The previous v01 object remains preserved for rollback. The v02 source is approximately 6.55 MB and 103k triangles, so mobile-network/device performance remains a pending measurement; five-view photos remain the first reference and error fallback. No Production storage object, Supabase migration, authentication setting, or `main` branch deployment was changed.
