@@ -104,3 +104,6 @@
 - [x] Remove the current generic Bernese 3D concept control from the customer-facing preview until an owner-reviewed product-specific model passes five-view comparison.
 - [ ] Define and implement the owner-photo-derived Bernese silhouette contract: prone posture, head-to-body proportion, rounded drooping ears, short muzzle, white face blaze, tan brow/leg patches, paw placement, tail volume, and memorial-tag attachment point.
 - [ ] Add a five-view comparison checklist and regression tests that prevent an unreviewed generic model from being presented as the registered Bernese product.
+- [x] Inspect the owner-provided `berner_plush_360.glb` for dimensions, mesh complexity, materials, textures, orientation, animation, named nodes, and browser performance before integrating it with a model-viewer fallback.
+- [ ] If the GLB passes owner review, serve it through isolated catalog storage and add a model-viewer-based Bernese 3D mode with 5-view photo fallback, loading/error states, and no unsupported production-accuracy claim.
+- [ ] Extend only the public catalog bucket's reviewed MIME allowlist to include `model/gltf-binary`, then retry the approved Bernese GLB upload in staging without changing private buyer/project storage rules.

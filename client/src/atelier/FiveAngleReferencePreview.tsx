@@ -12,6 +12,7 @@ import {
   profilesForReferenceProduct,
   validatePersonalizationFile,
 } from "./personalizationProfiles";
+import { BerneseModelViewer } from "./BerneseModelViewer";
 
 type Props = {
   product: ReferenceProduct;
@@ -27,6 +28,7 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
   const [inputError, setInputError] = useState("");
   const [personalizationStep, setPersonalizationStep] = useState<"method" | "content" | "review">("method");
   const [rotating, setRotating] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"photo" | "model">("photo");
   const [previousView, setPreviousView] = useState<ReferenceViewId | null>(null);
   const [failedImages, setFailedImages] = useState<string[]>([]);
   const profiles = profilesForReferenceProduct(product.family, product.personalizationProfileIds);
@@ -52,6 +54,7 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
 
   const selectView = (next: ReferenceViewId) => {
     setRotating(false);
+    setPreviewMode("photo");
     if (next !== view) {
       setPreviousView(view);
       window.setTimeout(() => setPreviousView(null), 420);
@@ -70,7 +73,16 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
       </div>
 
       <div className="at-reference-image-stage">
-        {previousView && (
+        {previewMode === "model" && product.model3d ? (
+          <BerneseModelViewer
+            onUnavailable={() => {
+              setPreviewMode("photo");
+              setRotating(false);
+              onMessage("3D 제품 뷰를 불러오지 못해 검수된 5면 사진 프리뷰로 전환했습니다.");
+            }}
+            src={product.model3d.source}
+          />
+        ) : previousView && (
           <img
             alt=""
             aria-hidden="true"
@@ -78,7 +90,7 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
             src={product.views[previousView].image}
           />
         )}
-        {!failedImages.includes(product.views[view].image) ? (
+        {previewMode === "photo" && !failedImages.includes(product.views[view].image) ? (
           <img
             alt={`${product.title} ${product.views[view].label} 기준 이미지`}
             className="at-reference-main-image at-reference-main-image--incoming"
@@ -91,11 +103,11 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
             }
             src={product.views[view].image}
           />
-        ) : (
+        ) : previewMode === "photo" ? (
           <p className="at-reference-image-fallback">이 기준 이미지를 불러오지 못했습니다. 다른 면을 선택하거나 관리자에게 알려주세요.</p>
-        )}
+        ) : null}
         <div className="at-reference-view-badge" aria-live="polite">
-          {product.views[view].label}
+          {previewMode === "model" ? "GLB 3D 제품 뷰" : product.views[view].label}
         </div>
       </div>
 
@@ -112,17 +124,33 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
         <button
           aria-pressed={rotating}
           className="at-reference-rotate"
-          onClick={() => setRotating(value => !value)}
+          onClick={() => {
+            setPreviewMode("photo");
+            setRotating(value => !value);
+          }}
         >
           {rotating ? <Pause size={15} /> : <Play size={15} />}
           {rotating ? "사진 회전 멈춤" : "사진 부드러운 회전"}
         </button>
+        {product.model3d && (
+          <button
+            aria-pressed={previewMode === "model"}
+            className="at-reference-rotate"
+            onClick={() => {
+              setRotating(false);
+              setPreviewMode("model");
+            }}
+          >
+            <Rotate3D size={15} />
+            {product.model3d.label}
+          </button>
+        )}
       </div>
 
       <div className="at-reference-explainer">
         <Rotate3D size={16} />
         <p>
-          검수된 기준 5면 사진을 부드럽게 전환하는 프리뷰입니다. 실제 메시·UV·깊이 정보가 있는 GLB 디지털 트윈과는 다르며, 판매 전 실측·소재·제작 검수가 필요합니다.
+          5면 사진은 검수 기준을 부드럽게 전환합니다. 3D 제품 뷰는 대표 제공 GLB의 실제 메시를 회전·확대하는 참고용 프리뷰이며, 판매 전 실측·소재·제작 검수가 필요합니다.
         </p>
       </div>
 

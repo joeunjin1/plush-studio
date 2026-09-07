@@ -13,6 +13,7 @@ describe("reviewed reference product catalog", () => {
     expect(product?.sku).toBe("PS-BERNESE-MEMORIAL-001");
     expect(product?.sourceStatus).toBe("seller-supplied");
     expect(referenceViewIds.every(view => Boolean(product?.views[view].image))).toBe(true);
+    expect(referenceProducts[0].model3d).toBeUndefined();
   });
 
   it("uses an environment-specific public catalog location outside local development", () => {

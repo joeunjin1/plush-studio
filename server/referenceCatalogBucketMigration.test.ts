@@ -1,9 +1,18 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 
 const migration = readFileSync(
   new URL(
     "../supabase/migrations/202609060009_reference_catalog_public_bucket.sql",
+    import.meta.url
+  ),
+  "utf8"
+);
+
+const glbMigration = readFileSync(
+  new URL(
+    "../supabase/migrations/202609070011_allow_catalog_glb.sql",
     import.meta.url
   ),
   "utf8"
@@ -29,5 +38,12 @@ describe("reference catalog public bucket migration", () => {
   it("documents that private buyer and factory assets remain outside the public catalog", () => {
     expect(migration).toContain("Buyer files, project assets, factory materials, and exports remain");
     expect(migration).toContain("private plush-studio bucket");
+  });
+
+  it("extends only the catalog bucket with the reviewed GLB MIME type", () => {
+    expect(glbMigration).toContain("where id = 'plush-studio-catalog'");
+    expect(glbMigration).toContain("'model/gltf-binary'");
+    expect(glbMigration).toContain("'image/png'");
+    expect(glbMigration).toContain("private plush-studio bucket");
   });
 });

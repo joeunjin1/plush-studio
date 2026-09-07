@@ -13,6 +13,13 @@ function catalogImage(filename: string, developmentFallback: string, stagingFile
     : developmentFallback;
 }
 
+function stagingCatalogModel(filename: string) {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "");
+  return supabaseUrl?.includes("trhhgmionyyfnbwhxenn")
+    ? `${supabaseUrl}/storage/v1/object/public/${catalogBucket}/${filename}`
+    : undefined;
+}
+
 export type ReferenceProduct = {
   id: string;
   sku: string;
@@ -22,6 +29,7 @@ export type ReferenceProduct = {
   sourceStatus: "seller-supplied" | "reviewed";
   reviewLabel: string;
   personalizationProfileIds: string[];
+  model3d?: { label: string; source: string };
   views: Record<ReferenceViewId, { label: string; image: string }>;
   memorialTag: {
     enabled: boolean;
@@ -43,6 +51,10 @@ export const referenceProducts: ReferenceProduct[] = [
     sourceStatus: "seller-supplied",
     reviewLabel: "대표 제공 5면 기준 이미지 · 치수/포장 실측 등록 전",
     personalizationProfileIds: ["memorial-tag-text-v01", "memorial-tag-brand-v01"],
+    model3d: (() => {
+      const source = stagingCatalogModel("berner_plush_360.glb");
+      return source ? { label: "실제 GLB 3D 제품 뷰", source } : undefined;
+    })(),
     views: {
       front: {
         label: "정면",

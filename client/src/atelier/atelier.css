@@ -669,6 +669,28 @@
   padding: 1.25rem;
   text-align: center;
 }
+.at-bernese-model-viewer,
+.at-bernese-model-viewer model-viewer {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+.at-bernese-model-viewer model-viewer {
+  background: radial-gradient(circle at 50% 35%, #ffffff 0%, #f7f8f4 55%, #eef1e8 100%);
+}
+.at-model-loading {
+  background: #ffffffdd;
+  border: 1px solid var(--at-line);
+  border-radius: 999rem;
+  color: var(--at-muted);
+  font-size: 0.72rem;
+  left: 50%;
+  margin: 0;
+  padding: 0.45rem 0.8rem;
+  position: absolute;
+  top: 1rem;
+  transform: translateX(-50%);
+}
 .at-bernese-concept-canvas {
   height: 100%;
   width: 100%;
