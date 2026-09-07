@@ -39,3 +39,7 @@ The local 1280 × 900 product-mall review confirmed that the Bernese five-view p
 ## 2026-09-06 — Staging catalog asset verification
 
 After the `plush-studio-catalog` public bucket was created in staging, the owner uploaded all five Bernese reference views and both tag faces to the bucket root. Direct public checks returned HTTP 200 with `image/webp` content for each of the seven files. The frontend now derives the public catalog URL from its environment-specific `VITE_SUPABASE_URL`; local development retains the signed `/manus-storage` fallback. The next staging deploy must be checked in a browser before the same approved catalog assets are copied to Production.
+
+## 2026-09-07 — Five-view correction and rotation experience
+
+The initial rear/top crops were not suitable because adjacent source-board photos remained visible. The owner supplied independent final rear and top images to replace them. The photo-view UI now preloads reference images, crossfades only between adjacent selected states, uses a slower 2.4-second cadence, and renders a clear fallback message instead of a broken-image icon on failure. A separate user-controlled Bernese 3D concept mode supplies continuous orbit rotation for interaction testing; it is explicitly described as a lightweight concept, not an accurate GLB digital twin. Local desktop review verified the isolated front reference stage and its generous product framing before staging deployment.

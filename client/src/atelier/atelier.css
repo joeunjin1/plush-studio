@@ -652,8 +652,39 @@
 .at-reference-main-image {
   height: 100%;
   object-fit: contain;
+  position: absolute;
   transition: opacity 180ms var(--ease-out, ease-out);
   width: 100%;
+}
+.at-reference-main-image--incoming {
+  animation: at-reference-view-in 420ms var(--ease-out, ease-out) both;
+}
+.at-reference-main-image--outgoing {
+  animation: at-reference-view-out 420ms var(--ease-out, ease-out) both;
+}
+.at-reference-image-fallback {
+  color: var(--at-muted);
+  font-size: 0.8rem;
+  max-width: 23rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+.at-bernese-concept-canvas {
+  height: 100%;
+  width: 100%;
+}
+.at-bernese-concept-canvas canvas {
+  height: 100% !important;
+  outline: none;
+  width: 100% !important;
+}
+@keyframes at-reference-view-in {
+  from { opacity: 0; transform: scale(1.015); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes at-reference-view-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.99); }
 }
 .at-reference-view-badge {
   background: #203a2ccc;
