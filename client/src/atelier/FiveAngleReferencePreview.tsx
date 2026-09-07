@@ -12,7 +12,6 @@ import {
   profilesForReferenceProduct,
   validatePersonalizationFile,
 } from "./personalizationProfiles";
-import { BerneseConceptPreview } from "./BerneseConceptPreview";
 
 type Props = {
   product: ReferenceProduct;
@@ -28,7 +27,6 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
   const [inputError, setInputError] = useState("");
   const [personalizationStep, setPersonalizationStep] = useState<"method" | "content" | "review">("method");
   const [rotating, setRotating] = useState(false);
-  const [previewMode, setPreviewMode] = useState<"photo" | "concept">("photo");
   const [previousView, setPreviousView] = useState<ReferenceViewId | null>(null);
   const [failedImages, setFailedImages] = useState<string[]>([]);
   const profiles = profilesForReferenceProduct(product.family, product.personalizationProfileIds);
@@ -58,7 +56,6 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
       setPreviousView(view);
       window.setTimeout(() => setPreviousView(null), 420);
     }
-    setPreviewMode("photo");
     setView(next);
   };
 
@@ -73,45 +70,32 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
       </div>
 
       <div className="at-reference-image-stage">
-        {previewMode === "concept" ? (
-          <BerneseConceptPreview
-            autoRotate={rotating}
-            onUnavailable={() => {
-              setPreviewMode("photo");
-              setRotating(false);
-              onMessage("이 기기에서는 3D 컨셉 회전을 사용할 수 없어 공식 5면 사진 프리뷰로 전환했습니다.");
-            }}
+        {previousView && (
+          <img
+            alt=""
+            aria-hidden="true"
+            className="at-reference-main-image at-reference-main-image--outgoing"
+            src={product.views[previousView].image}
+          />
+        )}
+        {!failedImages.includes(product.views[view].image) ? (
+          <img
+            alt={`${product.title} ${product.views[view].label} 기준 이미지`}
+            className="at-reference-main-image at-reference-main-image--incoming"
+            onError={() =>
+              setFailedImages(items =>
+                items.includes(product.views[view].image)
+                  ? items
+                  : [...items, product.views[view].image]
+              )
+            }
+            src={product.views[view].image}
           />
         ) : (
-          <>
-            {previousView && (
-              <img
-                alt=""
-                aria-hidden="true"
-                className="at-reference-main-image at-reference-main-image--outgoing"
-                src={product.views[previousView].image}
-              />
-            )}
-            {!failedImages.includes(product.views[view].image) ? (
-              <img
-                alt={`${product.title} ${product.views[view].label} 기준 이미지`}
-                className="at-reference-main-image at-reference-main-image--incoming"
-                onError={() =>
-                  setFailedImages(items =>
-                    items.includes(product.views[view].image)
-                      ? items
-                      : [...items, product.views[view].image]
-                  )
-                }
-                src={product.views[view].image}
-              />
-            ) : (
-              <p className="at-reference-image-fallback">이 기준 이미지를 불러오지 못했습니다. 다른 면을 선택하거나 관리자에게 알려주세요.</p>
-            )}
-          </>
+          <p className="at-reference-image-fallback">이 기준 이미지를 불러오지 못했습니다. 다른 면을 선택하거나 관리자에게 알려주세요.</p>
         )}
         <div className="at-reference-view-badge" aria-live="polite">
-          {previewMode === "concept" ? "3D 컨셉" : product.views[view].label}
+          {product.views[view].label}
         </div>
       </div>
 
@@ -128,31 +112,17 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
         <button
           aria-pressed={rotating}
           className="at-reference-rotate"
-          onClick={() => {
-            setPreviewMode("photo");
-            setRotating(value => !value);
-          }}
+          onClick={() => setRotating(value => !value)}
         >
           {rotating ? <Pause size={15} /> : <Play size={15} />}
           {rotating ? "사진 회전 멈춤" : "사진 부드러운 회전"}
-        </button>
-        <button
-          aria-pressed={previewMode === "concept"}
-          className="at-reference-rotate"
-          onClick={() => {
-            setPreviewMode("concept");
-            setRotating(true);
-          }}
-        >
-          <Rotate3D size={15} />
-          3D 컨셉 회전
         </button>
       </div>
 
       <div className="at-reference-explainer">
         <Rotate3D size={16} />
         <p>
-          사진 모드는 검수 기준 5면을 부드럽게 전환합니다. 3D 컨셉 모드는 조작 경험을 위한 단순 메시이며, 실제 메시·UV·깊이 정보가 있는 GLB 디지털 트윈과는 다릅니다. 판매 전 실측·소재·제작 검수가 필요합니다.
+          검수된 기준 5면 사진을 부드럽게 전환하는 프리뷰입니다. 실제 메시·UV·깊이 정보가 있는 GLB 디지털 트윈과는 다르며, 판매 전 실측·소재·제작 검수가 필요합니다.
         </p>
       </div>
 

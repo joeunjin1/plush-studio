@@ -97,8 +97,10 @@
 - [ ] Add a protected administrator product-master workflow for individual SKU registration, duplicate SKU blocking, color options, five direct file attachments, and approved product publication to the buyer mall.
 - [ ] Document the repeatable workflow for registering subsequent products and mapping each real printing method to its reusable personalization profile.
 - [x] Use the owner-supplied independent rear and top photographs instead of the unsuitable composite-board crops, retaining the supplied source identity and framing without generated reconstruction.
-- [ ] Deploy and browser-verify the staging-specific mapping from the Bernese rear/top views to the owner-supplied independent photographs.
+- [x] Deploy and browser-verify the staging-specific mapping from the Bernese rear/top views to the owner-supplied independent photographs.
 - [ ] Replace the staging catalog's incorrect Bernese rear and top assets and add image-load fallback handling so a failed catalog asset cannot render as a broken image icon.
 - [ ] Improve five-view auto rotation with directional crossfade and preloading, clearly labelling it as a photo-based virtual rotation rather than geometric 3D.
-- [ ] Add a separate, user-controlled rotating Bernese 3D concept model with a clear prototype label and a reliable fallback to the official five-view photos.
-- [ ] Add a WebGL-unavailable fallback that returns the Bernese concept mode to the official five-view photos with a clear user message instead of triggering the application error boundary.
+- [ ] Build a product-specific, owner-reviewed rotating Bernese 3D model and clear it against the official five views before exposing any buyer-facing 3D rotation control.
+- [x] Remove the current generic Bernese 3D concept control from the customer-facing preview until an owner-reviewed product-specific model passes five-view comparison.
+- [ ] Define and implement the owner-photo-derived Bernese silhouette contract: prone posture, head-to-body proportion, rounded drooping ears, short muzzle, white face blaze, tan brow/leg patches, paw placement, tail volume, and memorial-tag attachment point.
+- [ ] Add a five-view comparison checklist and regression tests that prevent an unreviewed generic model from being presented as the registered Bernese product.
