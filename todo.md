@@ -96,8 +96,8 @@
 - [ ] Store buyer personalization selections against a buyer-company-scoped request and preserve the selected reference-product version, method profile, text/image asset metadata, and review status.
 - [ ] Add a protected administrator product-master workflow for individual SKU registration, duplicate SKU blocking, color options, five direct file attachments, and approved product publication to the buyer mall.
 - [ ] Document the repeatable workflow for registering subsequent products and mapping each real printing method to its reusable personalization profile.
-- [ ] Re-extract the Bernese rear and top reference images so every individual view contains one correctly framed product with no neighboring board image visible.
-- [ ] Replace the Bernese rear and top staging catalog assets with the owner-supplied independent photographs, retaining the supplied source identity and framing without generated reconstruction.
+- [x] Use the owner-supplied independent rear and top photographs instead of the unsuitable composite-board crops, retaining the supplied source identity and framing without generated reconstruction.
+- [ ] Deploy and browser-verify the staging-specific mapping from the Bernese rear/top views to the owner-supplied independent photographs.
 - [ ] Replace the staging catalog's incorrect Bernese rear and top assets and add image-load fallback handling so a failed catalog asset cannot render as a broken image icon.
 - [ ] Improve five-view auto rotation with directional crossfade and preloading, clearly labelling it as a photo-based virtual rotation rather than geometric 3D.
 - [ ] Add a separate, user-controlled rotating Bernese 3D concept model with a clear prototype label and a reliable fallback to the official five-view photos.
