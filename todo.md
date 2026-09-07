@@ -98,12 +98,15 @@
 - [ ] Document the repeatable workflow for registering subsequent products and mapping each real printing method to its reusable personalization profile.
 - [x] Use the owner-supplied independent rear and top photographs instead of the unsuitable composite-board crops, retaining the supplied source identity and framing without generated reconstruction.
 - [x] Deploy and browser-verify the staging-specific mapping from the Bernese rear/top views to the owner-supplied independent photographs.
-- [ ] Replace the staging catalog's incorrect Bernese rear and top assets and add image-load fallback handling so a failed catalog asset cannot render as a broken image icon.
-- [ ] Improve five-view auto rotation with directional crossfade and preloading, clearly labelling it as a photo-based virtual rotation rather than geometric 3D.
+- [x] Replace the staging catalog's incorrect Bernese rear and top assets and add image-load fallback handling so a failed catalog asset cannot render as a broken image icon.
+- [x] Improve five-view auto rotation with directional crossfade and preloading, clearly labelling it as a photo-based virtual rotation rather than geometric 3D.
 - [ ] Build a product-specific, owner-reviewed rotating Bernese 3D model and clear it against the official five views before exposing any buyer-facing 3D rotation control.
 - [x] Remove the current generic Bernese 3D concept control from the customer-facing preview until an owner-reviewed product-specific model passes five-view comparison.
 - [ ] Define and implement the owner-photo-derived Bernese silhouette contract: prone posture, head-to-body proportion, rounded drooping ears, short muzzle, white face blaze, tan brow/leg patches, paw placement, tail volume, and memorial-tag attachment point.
 - [ ] Add a five-view comparison checklist and regression tests that prevent an unreviewed generic model from being presented as the registered Bernese product.
 - [x] Inspect the owner-provided `berner_plush_360.glb` for dimensions, mesh complexity, materials, textures, orientation, animation, named nodes, and browser performance before integrating it with a model-viewer fallback.
-- [ ] If the GLB passes owner review, serve it through isolated catalog storage and add a model-viewer-based Bernese 3D mode with 5-view photo fallback, loading/error states, and no unsupported production-accuracy claim.
-- [ ] Extend only the public catalog bucket's reviewed MIME allowlist to include `model/gltf-binary`, then retry the approved Bernese GLB upload in staging without changing private buyer/project storage rules.
+- [x] Serve the owner-approved Bernese GLB through isolated staging catalog storage and add a model-viewer-based 3D mode with five-view photo fallback, loading/error states, and no unsupported production-accuracy claim; user visual UAT remains pending for v02.
+- [x] Extend only the public catalog bucket's reviewed MIME allowlist to include `model/gltf-binary`, then retry the approved Bernese GLB upload in staging without changing private buyer/project storage rules.
+- [x] Analyze the owner-provided replacement GLB and compare its size, meshes, materials, named nodes, orientation, and SHA-256 hash against the current Bernese catalog model before replacement.
+- [x] Replace the staging Bernese GLB with the owner-provided approved source using a versioned catalog key, preserving the prior source for rollback and retaining the official five-view photo fallback.
+- [ ] Add a reusable owner-supplied GLB registration contract that records source filename, checksum, upload time, review state, target SKU, and model version without exposing source files through the database.

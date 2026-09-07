@@ -6,7 +6,7 @@ type Props = {
   onUnavailable: () => void;
 };
 
-export function BerneseModelViewer({ src, onUnavailable }: Props) {
+export default function BerneseModelViewer({ src, onUnavailable }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

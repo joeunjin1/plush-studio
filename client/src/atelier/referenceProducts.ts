@@ -29,7 +29,7 @@ export type ReferenceProduct = {
   sourceStatus: "seller-supplied" | "reviewed";
   reviewLabel: string;
   personalizationProfileIds: string[];
-  model3d?: { label: string; source: string };
+  model3d?: { label: string; source: string; version: string; checksumSha256: string };
   views: Record<ReferenceViewId, { label: string; image: string }>;
   memorialTag: {
     enabled: boolean;
@@ -52,8 +52,15 @@ export const referenceProducts: ReferenceProduct[] = [
     reviewLabel: "대표 제공 5면 기준 이미지 · 치수/포장 실측 등록 전",
     personalizationProfileIds: ["memorial-tag-text-v01", "memorial-tag-brand-v01"],
     model3d: (() => {
-      const source = stagingCatalogModel("berner_plush_360.glb");
-      return source ? { label: "실제 GLB 3D 제품 뷰", source } : undefined;
+      const source = stagingCatalogModel("bernese-memorial-plush/3d/berner_plush_360_v02.glb");
+      return source
+        ? {
+            label: "대표 제공 GLB 3D 제품 뷰",
+            source,
+            version: "v02",
+            checksumSha256: "eeebf4aba5861150ae0eca006cf85bb7d0583e7b9400c15ff60ac2106ac647d5",
+          }
+        : undefined;
     })(),
     views: {
       front: {

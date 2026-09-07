@@ -11,6 +11,7 @@ describe("five-angle reference preview", () => {
     expect(source).toContain("referenceViewIds.map");
     expect(source).toContain("사진 부드러운 회전");
     expect(source).toContain("BerneseModelViewer");
+    expect(source).toContain("lazy(() => import(\"./BerneseModelViewer\"))");
     expect(source).toContain("product.model3d.label");
     expect(source).toContain("검수된 5면 사진 프리뷰로 전환했습니다");
   });

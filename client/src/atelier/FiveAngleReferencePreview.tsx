@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Pause, Play, Rotate3D } from "lucide-react";
 import {
   constrainMemorialMessage,
@@ -12,7 +12,8 @@ import {
   profilesForReferenceProduct,
   validatePersonalizationFile,
 } from "./personalizationProfiles";
-import { BerneseModelViewer } from "./BerneseModelViewer";
+
+const BerneseModelViewer = lazy(() => import("./BerneseModelViewer"));
 
 type Props = {
   product: ReferenceProduct;
@@ -74,14 +75,16 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
 
       <div className="at-reference-image-stage">
         {previewMode === "model" && product.model3d ? (
-          <BerneseModelViewer
-            onUnavailable={() => {
-              setPreviewMode("photo");
-              setRotating(false);
-              onMessage("3D 제품 뷰를 불러오지 못해 검수된 5면 사진 프리뷰로 전환했습니다.");
-            }}
-            src={product.model3d.source}
-          />
+          <Suspense fallback={<p className="at-reference-image-fallback">3D 제품 뷰를 준비하는 중입니다.</p>}>
+            <BerneseModelViewer
+              onUnavailable={() => {
+                setPreviewMode("photo");
+                setRotating(false);
+                onMessage("3D 제품 뷰를 불러오지 못해 검수된 5면 사진 프리뷰로 전환했습니다.");
+              }}
+              src={product.model3d.source}
+            />
+          </Suspense>
         ) : previousView && (
           <img
             alt=""
@@ -142,7 +145,7 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
             }}
           >
             <Rotate3D size={15} />
-            {product.model3d.label}
+            {product.model3d.label} · {product.model3d.version}
           </button>
         )}
       </div>
