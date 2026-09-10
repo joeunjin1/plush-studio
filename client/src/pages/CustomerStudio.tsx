@@ -29,6 +29,7 @@ import { newRequestId } from "@/lib/requestId";
 import { RequestDesign } from "@/components/RequestDesign";
 import { RequestQuote } from "@/components/RequestQuote";
 import { RequestInbox } from "@/components/RequestInbox";
+import { ReferenceProductOrderHistory } from "@/components/ReferenceProductOrderHistory";
 import { catalogAdminMagicLinkRestoreRoute } from "@/atelier/buyerAccess";
 import "./customer.css";
 const Atelier = lazy(() => import("@/atelier/Atelier"));
@@ -415,16 +416,24 @@ export default function CustomerStudio() {
             <p className="cs-kicker">MY REQUESTS</p>
             <h1>내 제작 요청</h1>
             <p>
-              접수한 디자인과 현재 진행 상태를 확인하세요. 최근 50건을
-              보여드립니다.
+              공식 상품과 직접 만든 디자인의 제작 검토 요청을 구분해 확인하세요.
+              결제·발주 확정 전 요청과 진행 상태만 보여드립니다.
             </p>
             <Auth user={user} setMessage={setMessage} />
+            <ReferenceProductOrderHistory user={user} />
+            <section className="cs-generic-request-history" aria-labelledby="generic-request-history-title">
+              <div className="cs-reference-order-history-heading">
+                <div>
+                  <p className="cs-kicker">CUSTOM 3D DESIGN REQUESTS</p>
+                  <h2 id="generic-request-history-title">직접 만든 3D 디자인 요청</h2>
+                </div>
+              </div>
             {loading ? (
               <p role="status">내역을 불러오는 중…</p>
             ) : user && rows.length === 0 ? (
               <div className="cs-empty">
                 <Package size={38} />
-                <h2>아직 접수한 요청이 없어요</h2>
+                <h3>아직 접수한 3D 디자인 요청이 없어요</h3>
                 <a className="cs-primary" href="#design">
                   첫 인형 만들기 <ArrowRight size={18} />
                 </a>
@@ -470,6 +479,7 @@ export default function CustomerStudio() {
                 </article>
               ))
             )}
+            </section>
           </section>
         ) : receipt ? (
           <section className="cs-success">
