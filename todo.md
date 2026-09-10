@@ -127,3 +127,6 @@
 - [x] Diagnose the staging official-product order submit RPC failure without creating a duplicate request, then minimally repair only the private-RPC schema usage contract and repeat one successful UAT request.
 - [x] Separate generic 3D-maker request controls from the official reference-product order context, and provide an unambiguous buyer confirmation and re-entry path after a reference order is received; the next live reference-order UAT must confirm the receipt state visually.
 - [x] Add a buyer-company scoped official-product order history to `내 제작 요청`, showing only the authenticated buyer's unshipped reference-product requests without exposing personalization originals or private asset paths; live authenticated buyer UAT remains pending.
+- [ ] Add a brand_admin-only reviewed-photo publication action that copies approved private photo intakes to the public catalog and registers only the five required reviewed views as buyer-visible assets.
+- [ ] Connect the buyer mall to database-backed approved reference products, retaining the current source catalog only as a staging fallback until the first DB-backed product passes end-to-end UAT.
+- [ ] Add brand_admin product-to-personalization-profile binding so each DB-backed buyer-visible SKU has at least one reusable, eligible personalization method.

@@ -16,6 +16,7 @@ type ExistingIntake = { view_key: ReferencePhotoViewKey; review_state: string };
 
 type Props = {
   organizationId: string;
+  onRegistered?: () => Promise<void> | void;
   productId: string;
   userId: string;
 };
@@ -26,7 +27,7 @@ function errorMessage(error: unknown) {
     : "5면 사진 초안 등록에 실패했습니다.";
 }
 
-export function ReferenceProductPhotoIntake({ organizationId, productId, userId }: Props) {
+export function ReferenceProductPhotoIntake({ organizationId, onRegistered, productId, userId }: Props) {
   const [files, setFiles] = useState<Partial<Record<ReferencePhotoViewKey, File>>>({});
   const [analysis, setAnalysis] = useState<Partial<Record<ReferencePhotoViewKey, ReferencePhotoAnalysis>>>({});
   const [existing, setExisting] = useState<ExistingIntake[]>([]);
@@ -108,6 +109,7 @@ export function ReferenceProductPhotoIntake({ organizationId, productId, userId 
       setAnalysis({});
       setMessage("5면 사진 초안을 등록했습니다. 권리 확인·구도 검토·public catalog 복사·상품 승인 전에는 구매자에게 노출되지 않습니다.");
       await refreshExisting();
+      await onRegistered?.();
     } catch (error) {
       if (insertedPaths.length > 0) {
         await supabase.from("reference_product_image_intakes").delete().in("source_storage_path", insertedPaths);

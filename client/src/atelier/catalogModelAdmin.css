@@ -74,6 +74,19 @@
 .at-model-admin-analysis b { font-size: 0.82rem; overflow-wrap: anywhere; }
 .at-model-admin-submit { width: 100%; }
 .at-model-admin-footnote { display: block; line-height: 1.5; margin-top: 0.65rem; }
+.at-photo-review-status { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 1rem 0; }
+.at-photo-review-status span { border: 1px solid var(--at-line); border-radius: 999rem; color: var(--at-muted); font-size: 0.7rem; padding: 0.35rem 0.55rem; }
+.at-photo-review-status span[data-ready="true"] { background: var(--at-soft); border-color: var(--at-accent); color: var(--at-ink); }
+.at-model-admin-note { display: grid; gap: 0.35rem; margin: 1rem 0; }
+.at-model-admin-note > span { color: var(--at-ink); font-size: 0.75rem; font-weight: 700; }
+.at-model-admin-note textarea { background: var(--at-page); border: 1px solid var(--at-line); border-radius: 0.65rem; color: var(--at-ink); font: inherit; min-height: 5rem; padding: 0.65rem 0.75rem; resize: vertical; }
+.at-profile-binding { display: grid; gap: 0.8rem; }
+.at-profile-binding-list { display: grid; gap: 0.55rem; }
+.at-profile-binding-list label { align-items: flex-start; background: var(--at-soft); border: 1px solid var(--at-line); border-radius: 0.65rem; display: flex; gap: 0.6rem; padding: 0.65rem; }
+.at-profile-binding-list input { accent-color: var(--at-accent); margin-top: 0.2rem; }
+.at-profile-binding-list span { display: grid; gap: 0.15rem; }
+.at-profile-binding-list b { font-size: 0.8rem; }
+.at-profile-binding-list small { color: var(--at-muted); font-size: 0.68rem; }
 .at-model-admin-table { overflow-x: auto; }
 .at-model-admin-table table { border-collapse: collapse; font-size: 0.8rem; min-width: 38rem; width: 100%; }
 .at-model-admin-table th { color: var(--at-muted); font-size: 0.68rem; letter-spacing: 0.06em; text-align: left; }

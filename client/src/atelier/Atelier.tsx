@@ -42,6 +42,7 @@ import {
   type ReferenceProductOrderDraft,
 } from "./referenceProductOrder";
 import { profilesForReferenceProduct } from "./personalizationProfiles";
+import { useApprovedReferenceProducts } from "./useApprovedReferenceProducts";
 import { BuyerAuthGate } from "./BuyerAuthGate";
 import {
   buyerAccessPrompt,
@@ -113,7 +114,14 @@ export default function Atelier() {
   const current = useRef(p);
   current.current = p;
   const { user: buyer } = useBuyerSession();
-  const selectedReferenceProduct = referenceProductById(referenceProductId);
+  const { products: approvedReferenceProducts, ready: approvedReferenceProductsReady } = useApprovedReferenceProducts();
+  const activeReferenceProducts = approvedReferenceProductsReady && approvedReferenceProducts.length > 0
+    ? approvedReferenceProducts
+    : referenceProducts;
+  const selectedReferenceProduct = activeReferenceProducts.find(product => product.id === referenceProductId)
+    ?? (approvedReferenceProductsReady && approvedReferenceProducts.length > 0
+      ? null
+      : referenceProductById(referenceProductId));
   const selectedReferenceOrder = referenceOrder?.productId === selectedReferenceProduct?.id ? referenceOrder : null;
   const selectReferenceProduct = (product: NonNullable<typeof selectedReferenceProduct>) => {
     setReferenceProductId(product.id);
@@ -489,7 +497,7 @@ export default function Atelier() {
               }}>
                 상품몰 열기
               </button>
-              {referenceProducts.map(product => (
+              {activeReferenceProducts.map(product => (
                 <button
                   aria-pressed={referenceProductId === product.id}
                   className="at-reference-product-card"
@@ -1229,7 +1237,7 @@ export default function Atelier() {
                   selectReferenceProduct(product);
                   setMessage(`${product.title}을(를) 선택했습니다. 개인화 방식을 먼저 고른 뒤 내용을 적용해 주세요.`);
                 }}
-                products={referenceProducts}
+                products={activeReferenceProducts}
               />
             ) : selectedReferenceProduct ? (
               <>

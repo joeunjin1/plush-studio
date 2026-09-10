@@ -17,6 +17,12 @@ import {
 } from "./ownerModelRegistration";
 import { ReferenceProductMasterIntake } from "./ReferenceProductMasterIntake";
 import { ReferenceProductPhotoIntake } from "./ReferenceProductPhotoIntake";
+import { ReferenceProductPersonalizationBinding } from "./ReferenceProductPersonalizationBinding";
+import {
+  fiveRequiredPhotoIntakes,
+  publishReferenceProductPhotoCopies,
+  type ReferenceProductPhotoIntakeRow,
+} from "./referenceProductPhotoPublication";
 import "./catalogModelAdmin.css";
 
 type Organization = { id: string; name: string; slug: string };
@@ -27,6 +33,7 @@ type Product = {
   title: string;
   review_status: string;
   visible_to_buyers: boolean;
+  product_family: "plush" | "bag" | "shirt" | "other";
 };
 type ModelRow = {
   id: string;
@@ -63,6 +70,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [models, setModels] = useState<ModelRow[]>([]);
+  const [photoIntakes, setPhotoIntakes] = useState<ReferenceProductPhotoIntakeRow[]>([]);
   const [organizationId, setOrganizationId] = useState("");
   const [productId, setProductId] = useState("");
   const [modelVersion, setModelVersion] = useState("v01");
@@ -72,6 +80,8 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [photoPublishing, setPhotoPublishing] = useState(false);
+  const [photoReviewNote, setPhotoReviewNote] = useState("");
   const [migrationReady, setMigrationReady] = useState(true);
 
   const organizationProducts = useMemo(
@@ -83,6 +93,11 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
     [models, productId]
   );
   const versionExists = productModels.some(model => model.model_version.toLowerCase() === modelVersion.trim().toLowerCase());
+  const selectedPhotoIntakes = useMemo(
+    () => photoIntakes.filter(intake => intake.reference_product_id === productId),
+    [photoIntakes, productId]
+  );
+  const photoPublicationReady = Boolean(fiveRequiredPhotoIntakes(selectedPhotoIntakes));
 
   const load = async () => {
     if (!supabase || !user) return;
@@ -112,7 +127,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
       }
       const { data: productRows, error: productError } = await supabase
         .from("reference_products")
-        .select("id, organization_id, sku, title, review_status, visible_to_buyers")
+        .select("id, organization_id, sku, title, review_status, visible_to_buyers, product_family")
         .in("organization_id", orgIds)
         .order("created_at", { ascending: false });
       if (productError) throw productError;
@@ -133,6 +148,21 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
       }
       setMigrationReady(true);
       setModels((modelRows ?? []) as ModelRow[]);
+
+      const { data: photoRows, error: photoError } = await supabase
+        .from("reference_product_image_intakes")
+        .select("id, reference_product_id, view_key, source_storage_bucket, source_storage_path, original_filename, mime_type, review_state")
+        .order("created_at", { ascending: false });
+      if (photoError) {
+        if (photoError.code === "42P01") {
+          setPhotoIntakes([]);
+          setMessage("staging DB에 migration 015를 적용하면 5면 사진 초안 검토와 공개 승격을 시작할 수 있습니다.");
+        } else {
+          throw photoError;
+        }
+      } else {
+        setPhotoIntakes((photoRows ?? []) as ReferenceProductPhotoIntakeRow[]);
+      }
     } catch (error) {
       setMessage(readableError(error, "관리자 상품 마스터 정보를 불러오지 못했습니다."));
     } finally {
@@ -240,6 +270,28 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
     }
   };
 
+  const publishPhotoCopies = async () => {
+    if (!supabase || !organizationId || !productId) return;
+    setPhotoPublishing(true);
+    setMessage("private 5면 원본을 검토된 public catalog 복사본으로 등록하는 중…");
+    try {
+      await publishReferenceProductPhotoCopies({
+        supabase,
+        organizationId,
+        productId,
+        photoIntakes: selectedPhotoIntakes,
+        reviewNote: photoReviewNote,
+      });
+      setPhotoReviewNote("");
+      setMessage("5면 사진을 승인해 public catalog에 등록했습니다. 이제 이 SKU는 buyer mall에 표시될 수 있습니다.");
+      await load();
+    } catch (error) {
+      setMessage(readableError(error, "사진 공개 승인에 실패했습니다. private 원본은 그대로 유지되고 buyer mall에는 반영되지 않았습니다."));
+    } finally {
+      setPhotoPublishing(false);
+    }
+  };
+
   if (!supabase) {
     return <section className="at-model-admin at-model-admin-empty"><h1>관리자 상품 마스터를 준비 중입니다.</h1><p>staging Supabase 공개 환경 구성이 필요합니다.</p></section>;
   }
@@ -288,12 +340,32 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
         {productId && organizationId && (
           <section className="at-model-admin-card" aria-label="5면 사진 초안 등록">
             <ReferenceProductPhotoIntake
-              organizationId={organizationId}
-              productId={productId}
+            organizationId={organizationId}
+            onRegistered={load}
+            productId={productId}
               userId={user.id}
             />
           </section>
         )}
+
+        <section className="at-model-admin-card" aria-labelledby="photo-review-title">
+          <div className="at-model-admin-card-heading"><ShieldCheck size={20} /><div><span>03 · PHOTO REVIEW</span><h2 id="photo-review-title">5면 사진 검토 · buyer 공개</h2></div></div>
+          {productId ? (
+            <>
+              <p className="at-model-admin-footnote">필수 5면이 모두 private 초안으로 등록된 뒤, 권리·프레이밍·상품 동일성을 확인한 brand_admin만 public catalog 복사본으로 승격할 수 있습니다. 상세 사진은 buyer 공개 승격 대상이 아닙니다.</p>
+              <div className="at-photo-review-status" aria-label="선택 SKU 사진 검토 상태">
+                {["front", "left", "rear", "right", "top"].map(view => {
+                  const intake = selectedPhotoIntakes.find(item => item.view_key === view);
+                  return <span data-ready={Boolean(intake)} key={view}>{view} · {intake?.review_state ?? "미등록"}</span>;
+                })}
+              </div>
+              <label className="at-model-admin-note"><span>검토 메모 (선택)</span><textarea disabled={photoPublishing} maxLength={2000} onChange={event => setPhotoReviewNote(event.target.value)} placeholder="예: 실물 색상·프레이밍·권리 확인 완료" value={photoReviewNote} /></label>
+              <button className="at-primary at-model-admin-submit" disabled={photoPublishing || !photoPublicationReady} onClick={() => void publishPhotoCopies()} type="button">{photoPublishing ? "public catalog 복사 중…" : photoPublicationReady ? "검토 완료 · 5면 buyer 공개" : "필수 5면 초안이 필요합니다"}</button>
+            </>
+          ) : <div className="at-model-admin-empty"><HardDrive size={22} /><p>대상 상품 SKU를 선택하세요.</p><span>상품 초안과 필수 5면을 먼저 등록한 뒤 검토 큐가 활성화됩니다.</span></div>}
+        </section>
+
+        {productId && organizationId && organizationProducts.find(product => product.id === productId) && <section className="at-model-admin-card" aria-label="상품별 개인화 방식 연결"><ReferenceProductPersonalizationBinding organizationId={organizationId} productFamily={organizationProducts.find(product => product.id === productId)!.product_family} productId={productId} /></section>}
 
         <section className="at-model-admin-card" aria-labelledby="model-draft-title">
           <div className="at-model-admin-card-heading"><FileUp size={20} /><div><span>03 · 3D DRAFT</span><h2 id="model-draft-title">대표 제공 GLB 초안 등록</h2></div></div>
