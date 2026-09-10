@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 import {
   ArrowRight,
   ArrowLeft,
@@ -29,6 +29,7 @@ import { newRequestId } from "@/lib/requestId";
 import { RequestDesign } from "@/components/RequestDesign";
 import { RequestQuote } from "@/components/RequestQuote";
 import { RequestInbox } from "@/components/RequestInbox";
+import { catalogAdminMagicLinkRestoreRoute } from "@/atelier/buyerAccess";
 import "./customer.css";
 const Atelier = lazy(() => import("@/atelier/Atelier"));
 const CatalogModelAdmin = lazy(() => import("@/atelier/CatalogModelAdmin"));
@@ -192,11 +193,19 @@ export default function CustomerStudio() {
   }, []);
   useEffect(() => {
     if (!supabase) return;
+    const applySession = (session: Session | null) => {
+      setUser(session?.user ?? null);
+      if (!session?.user) return;
+      const adminRestoreRoute = catalogAdminMagicLinkRestoreRoute();
+      if (!adminRestoreRoute) return;
+      window.history.replaceState(null, "", adminRestoreRoute);
+      setScreen("catalog-admin");
+    };
     supabase.auth
       .getSession()
-      .then(({ data }) => setUser(data.session?.user ?? null));
+      .then(({ data }) => applySession(data.session));
     const { data } = supabase.auth.onAuthStateChange((_event, session) =>
-      setUser(session?.user ?? null)
+      applySession(session)
     );
     return () => data.subscription.unsubscribe();
   }, []);

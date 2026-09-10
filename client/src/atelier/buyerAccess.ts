@@ -16,6 +16,22 @@ export function buyerEmailRedirectUrl(location: Location = window.location) {
   return `${location.origin}${location.pathname}${location.search}${location.hash}`;
 }
 
+const catalogAdminReturnParameter = "plush_admin_return";
+
+export function catalogAdminMagicLinkRedirectUrl(location: Location = window.location) {
+  const url = new URL(location.href);
+  url.hash = "";
+  url.searchParams.set(catalogAdminReturnParameter, "catalog-admin");
+  return url.toString();
+}
+
+export function catalogAdminMagicLinkRestoreRoute(location: Location = window.location) {
+  const url = new URL(location.href);
+  if (url.searchParams.get(catalogAdminReturnParameter) !== "catalog-admin") return null;
+  url.searchParams.delete(catalogAdminReturnParameter);
+  return `${url.pathname}${url.search}#catalog-admin`;
+}
+
 export function buyerAccessPrompt(artifact: ProtectedArtifact) {
   return `${artifact}은 이메일 인증 후 이용할 수 있습니다. 지금까지의 체험 디자인은 이 기기에 유지됩니다.`;
 }

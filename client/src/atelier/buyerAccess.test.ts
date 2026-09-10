@@ -5,6 +5,8 @@ import {
   buyerDownloadArtifactType,
   buyerEmailRedirectUrl,
   buyerMagicLinkErrorMessage,
+  catalogAdminMagicLinkRedirectUrl,
+  catalogAdminMagicLinkRestoreRoute,
   completeBuyerDownloadAudit,
 } from "./buyerAccess";
 
@@ -12,6 +14,13 @@ describe("buyer email access boundary", () => {
   it("returns buyers to the exact product and editor route after email authentication", () => {
     const location = new URL("https://plush-studio.vercel.app/?template=tote#atelier") as unknown as Location;
     expect(buyerEmailRedirectUrl(location)).toBe("https://plush-studio.vercel.app/?template=tote#atelier");
+  });
+
+  it("keeps the administrator return target outside the Supabase token hash", () => {
+    const loginLocation = new URL("https://plush-studio-git-staging.vercel.app/#catalog-admin") as unknown as Location;
+    expect(catalogAdminMagicLinkRedirectUrl(loginLocation)).toBe("https://plush-studio-git-staging.vercel.app/?plush_admin_return=catalog-admin");
+    const callbackLocation = new URL("https://plush-studio-git-staging.vercel.app/?plush_admin_return=catalog-admin#access_token=opaque") as unknown as Location;
+    expect(catalogAdminMagicLinkRestoreRoute(callbackLocation)).toBe("/#catalog-admin");
   });
 
   it("explains that guest design remains local at a protected artifact boundary", () => {

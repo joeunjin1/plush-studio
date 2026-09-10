@@ -24,7 +24,7 @@ describe("protected owner GLB intake screen", () => {
   });
 
   it("reuses the established magic-link redirect and error classification", () => {
-    expect(source).toContain("emailRedirectTo: buyerEmailRedirectUrl()");
+    expect(source).toContain("emailRedirectTo: catalogAdminMagicLinkRedirectUrl()");
     expect(source).toContain("buyerMagicLinkErrorMessage(error)");
   });
 });
