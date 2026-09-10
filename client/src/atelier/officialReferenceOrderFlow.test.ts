@@ -21,4 +21,11 @@ describe("official reference product order flow", () => {
   it("clears the official order draft when the buyer returns to the generic 3D editor", () => {
     expect(atelier).toContain("setReferenceOrder(null)");
   });
+
+  it("keeps generic maker request controls out of the official-product order context", () => {
+    expect(atelier).toContain("!selectedReferenceProduct && <fieldset disabled={busy} className=\"at-controls\">");
+    expect(atelier).toContain("!selectedReferenceProduct && <fieldset disabled={busy} className=\"at-toolbar\">");
+    expect(atelier).toContain("startNewReferenceOrder");
+    expect(atelier).toContain("onStartNew={startNewReferenceOrder}");
+  });
 });

@@ -159,6 +159,15 @@ export default function Atelier() {
       setMessage("공식 상품 제작 요청이 접수되었습니다. 내 제작 요청에서 진행 상태를 확인할 수 있습니다.");
     });
   };
+  const startNewReferenceOrder = () => {
+    if (!selectedReferenceProduct) return;
+    requestId.current = newRequestId();
+    setReferenceOrder(
+      createReferenceProductOrderDraft(requestId.current, selectedReferenceProduct)
+    );
+    setReceipt("");
+    setMessage("새 공식 상품 요청을 준비했습니다. 개인화 방식을 다시 선택해 주세요.");
+  };
   useEffect(() => {
     const leave = (e: BeforeUnloadEvent) => {
       if (dirty.current) {
@@ -418,7 +427,7 @@ export default function Atelier() {
                 ×
               </button>
             </div>
-            <fieldset disabled={busy} className="at-toolbar">
+            {!selectedReferenceProduct && <fieldset disabled={busy} className="at-toolbar">
               <div>
                 {(Object.keys(productNames) as Project["product"][]).map(
                   product => (
@@ -468,7 +477,7 @@ export default function Atelier() {
                   클라우드 저장
                 </button>
               </div>
-            </fieldset>
+            </fieldset>}
             <section className="at-reference-library" aria-label="공식 기준 상품 라이브러리">
               <div className="at-reference-library-heading">
                 <span>REFERENCE PRODUCT LIBRARY</span>
@@ -511,7 +520,7 @@ export default function Atelier() {
                 </button>
               )}
             </section>
-            <fieldset disabled={busy} className="at-controls">
+            {!selectedReferenceProduct && <fieldset disabled={busy} className="at-controls">
             <nav>
               {[
                 ["template", "1. 제품 템플릿"],
@@ -1175,7 +1184,7 @@ export default function Atelier() {
                 )}
               </>
             )}
-            </fieldset>
+            </fieldset>}
           </aside>
           {pendingTemplate && (
             <section aria-modal="true" className="at-template-confirm" role="dialog" aria-label="새 제품 템플릿 시작 확인">
@@ -1205,9 +1214,13 @@ export default function Atelier() {
                 >
                   <PanelLeft size={16} /> 편집
                 </button>
-                <button onClick={showShelf} disabled={busy}>
-                  <Layers size={16} /> 내 저장 작업
-                </button>
+                {selectedReferenceProduct ? (
+                  <a className="at-stage-requests" href="#requests">내 제작 요청</a>
+                ) : (
+                  <button onClick={showShelf} disabled={busy}>
+                    <Layers size={16} /> 내 저장 작업
+                  </button>
+                )}
               </div>
             </div>
             {mallOpen ? (
@@ -1234,6 +1247,7 @@ export default function Atelier() {
                     busy={busy}
                     draft={selectedReferenceOrder}
                     onChange={updateReferenceOrder}
+                    onStartNew={startNewReferenceOrder}
                     onSubmit={submitSelectedReferenceOrder}
                     product={selectedReferenceProduct}
                     receipt={receipt}

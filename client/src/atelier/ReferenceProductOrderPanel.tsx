@@ -12,6 +12,7 @@ type Props = {
   busy: boolean;
   draft: ReferenceProductOrderDraft;
   onChange: (patch: Partial<ReferenceProductOrderDraft>) => void;
+  onStartNew: () => void;
   onSubmit: () => void;
   product: ReferenceProduct;
   receipt: string;
@@ -24,6 +25,7 @@ export function ReferenceProductOrderPanel({
   busy,
   draft,
   onChange,
+  onStartNew,
   onSubmit,
   product,
   receipt,
@@ -50,7 +52,10 @@ export function ReferenceProductOrderPanel({
         <h2>제작 요청을 접수했습니다.</h2>
         <p>결제나 발주가 확정된 단계는 아닙니다. 상품 사양과 개인화 내용을 검토한 뒤 로그인 이메일로 안내합니다.</p>
         <p className="at-reference-order-receipt">접수번호 · {receipt}</p>
-        <a className="at-primary" href="#requests">내 제작 요청 확인</a>
+        <div className="at-reference-order-success-actions">
+          <a className="at-primary" href="#requests">내 제작 요청 확인</a>
+          <button onClick={onStartNew} type="button">같은 상품 새 요청</button>
+        </div>
       </section>
     );
   }

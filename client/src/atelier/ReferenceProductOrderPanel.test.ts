@@ -27,4 +27,10 @@ describe("reference product order panel", () => {
     expect(source).toContain("이메일 인증 후 요청 보내기");
     expect(source).not.toContain(".from(");
   });
+
+  it("offers an explicit same-product new-request path after receipt", () => {
+    expect(source).toContain("같은 상품 새 요청");
+    expect(source).toContain("onStartNew");
+    expect(source).toContain("내 제작 요청 확인");
+  });
 });
