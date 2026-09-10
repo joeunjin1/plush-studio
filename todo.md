@@ -121,5 +121,6 @@
 - [x] Provide a staging-only minimal SQL file that grants `gjtrade@naver.com` brand_admin membership for the existing plush-studio organization without creating accounts or modifying Production.
 - [x] Fix the UUID aggregate error in the staging-only brand_admin grant SQL, validate the no-partial-change guard, and provide a corrected retry file.
 - [x] Create and maintain a release runbook that distinguishes GitHub code merge, Supabase Production migrations, approved catalog-asset promotion, and Auth redirect verification so staging work can be safely promoted only after UAT.
-- [ ] Redesign the buyer ordering journey around official product selection, valid personalization method, live placement review, quantity and delivery requirements, contact consent, and a single protected request confirmation.
+- [x] Redesign the buyer ordering journey around official product selection, valid personalization method, live placement review, quantity and delivery requirements, contact consent, and a single protected request confirmation; staging database activation and live buyer UAT remain pending.
 - [ ] Run iterative staging UAT of the buyer ordering flow on desktop and mobile, capturing friction findings before Production promotion.
+- [ ] Apply staging-only migration 013 to persist authenticated official-product order metadata in buyer-company records and private personalization storage, then verify one real request end to end.

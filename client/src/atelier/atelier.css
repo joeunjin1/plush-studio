@@ -971,6 +971,229 @@
   transform: translateX(-50%);
   white-space: nowrap;
 }
+.at-reference-order {
+  background: var(--at-card);
+  border-top: 1px solid var(--at-line);
+  padding: 1.25rem;
+}
+.at-reference-order-heading > span,
+.at-reference-order-summary span,
+.at-reference-order-final-grid span,
+.at-reference-order--success > span {
+  color: var(--at-muted);
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+.at-reference-order-heading h2,
+.at-reference-order--success h2 {
+  color: var(--at-ink);
+  font-size: 1.25rem;
+  letter-spacing: -0.04em;
+  margin: 0.35rem 0;
+}
+.at-reference-order-heading p,
+.at-reference-order--success > p {
+  color: var(--at-muted);
+  font-size: 0.76rem;
+  line-height: 1.55;
+  margin: 0;
+}
+.at-reference-order-steps {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 1rem 0;
+}
+.at-reference-order-steps button {
+  align-items: center;
+  color: var(--at-muted);
+  display: flex;
+  font-size: 0.72rem;
+  gap: 0.4rem;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.45rem;
+}
+.at-reference-order-steps button span {
+  align-items: center;
+  border: 1px solid var(--at-line);
+  border-radius: 999rem;
+  display: inline-flex;
+  flex: none;
+  height: 1.35rem;
+  justify-content: center;
+  width: 1.35rem;
+}
+.at-reference-order-steps button[aria-current="step"] {
+  background: var(--at-soft);
+  border-color: var(--at-accent);
+  color: var(--at-ink);
+}
+.at-reference-order-steps button[aria-current="step"] span {
+  background: var(--at-accent);
+  border-color: var(--at-accent);
+  color: var(--at-card);
+}
+.at-reference-order-section {
+  border-top: 1px solid var(--at-line);
+  padding-top: 1rem;
+}
+.at-reference-order-summary {
+  align-items: center;
+  background: var(--at-soft);
+  border: 1px solid var(--at-line);
+  border-radius: 0.75rem;
+  display: flex;
+  gap: 0.8rem;
+  padding: 0.8rem;
+}
+.at-reference-order-summary img {
+  background: var(--at-card);
+  border-radius: 0.55rem;
+  height: 5.25rem;
+  object-fit: contain;
+  width: 5.25rem;
+}
+.at-reference-order-summary b,
+.at-reference-order-final-grid b {
+  color: var(--at-ink);
+  display: block;
+  font-size: 0.88rem;
+  margin: 0.2rem 0;
+}
+.at-reference-order-summary small,
+.at-reference-order-final-grid small,
+.at-reference-order-review-copy small,
+.at-reference-order-fields .at-field > small {
+  color: var(--at-muted);
+  display: block;
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+.at-reference-order-review-copy,
+.at-reference-order-warning,
+.at-reference-order-auth,
+.at-reference-order-disclaimer {
+  background: var(--at-copper-soft);
+  border-radius: 0.6rem;
+  color: var(--at-ink);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  margin: 0.8rem 0 0;
+  padding: 0.7rem 0.8rem;
+}
+.at-reference-order-review-copy p {
+  color: var(--at-ink);
+  font-size: 0.85rem;
+  margin: 0.3rem 0;
+  white-space: pre-line;
+}
+.at-reference-order-warning {
+  background: var(--at-soft);
+}
+.at-reference-order-fields {
+  display: grid;
+  gap: 0.8rem;
+}
+.at-reference-order-fields .at-field {
+  margin: 0;
+}
+.at-reference-order-fields .at-field > span em {
+  color: var(--at-muted);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 400;
+}
+.at-reference-order-fields input,
+.at-reference-order-fields textarea {
+  font-size: 1rem;
+}
+.at-reference-order-purpose {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+.at-reference-order-purpose legend {
+  color: var(--at-ink);
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.at-reference-order-purpose label {
+  align-items: center;
+  border: 1px solid var(--at-line);
+  border-radius: 0.6rem;
+  display: flex;
+  font-size: 0.78rem;
+  gap: 0.55rem;
+  margin-top: 0.45rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.7rem;
+}
+.at-reference-order-purpose input {
+  accent-color: var(--at-accent);
+  height: 1rem;
+  width: 1rem;
+}
+.at-reference-order-auth {
+  align-items: center;
+  background: var(--at-soft);
+  display: flex;
+  gap: 0.45rem;
+}
+.at-reference-order-final-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.at-reference-order-final-grid > div {
+  background: var(--at-soft);
+  border: 1px solid var(--at-line);
+  border-radius: 0.65rem;
+  padding: 0.7rem;
+}
+.at-reference-order-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+.at-reference-order-actions button {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+  justify-content: center;
+  min-height: 2.75rem;
+}
+.at-reference-order-actions .at-primary {
+  min-width: 11rem;
+}
+.at-reference-order--success {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.at-reference-order--success > svg {
+  color: var(--at-accent);
+}
+.at-reference-order-receipt {
+  background: var(--at-soft);
+  border: 1px solid var(--at-line);
+  border-radius: 0.55rem;
+  color: var(--at-ink) !important;
+  font-weight: 700;
+  padding: 0.6rem 0.75rem;
+}
+.at-reference-order--success .at-primary {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  margin-top: 0.25rem;
+  min-height: 2.75rem;
+}
 .at-backups {
   display: flex;
   flex-wrap: wrap;
@@ -1640,6 +1863,34 @@
   }
   .at-memorial-tag-preview {
     min-height: 17rem;
+  }
+  .at-reference-order {
+    padding: 1rem;
+  }
+  .at-reference-order-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .at-reference-order-steps button {
+    font-size: 0.68rem;
+    justify-content: flex-start;
+  }
+  .at-reference-order-actions {
+    background: var(--at-card);
+    border-top: 1px solid var(--at-line);
+    bottom: 0;
+    margin: 1rem -1rem -1rem;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    position: sticky;
+    z-index: 4;
+  }
+  .at-reference-order-actions button {
+    flex: 1;
+  }
+  .at-reference-order-actions .at-primary {
+    min-width: 0;
+  }
+  .at-reference-order-final-grid {
+    grid-template-columns: 1fr;
   }
   .at-dimensions {
     gap: 8px;

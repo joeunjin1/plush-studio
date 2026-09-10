@@ -32,6 +32,16 @@ import { ProductPreview, saveBlob } from "./ProductPreview";
 import { FiveAngleReferencePreview } from "./FiveAngleReferencePreview";
 import { ProductMall } from "./ProductMall";
 import { referenceProductById, referenceProducts } from "./referenceProducts";
+import { ReferenceProductOrderPanel } from "./ReferenceProductOrderPanel";
+import {
+  clearReferenceProductOrderDraft,
+  createReferenceProductOrderDraft,
+  persistReferenceProductOrderDraft,
+  restoreReferenceProductOrderDraft,
+  submitReferenceProductOrder,
+  type ReferenceProductOrderDraft,
+} from "./referenceProductOrder";
+import { profilesForReferenceProduct } from "./personalizationProfiles";
 import { BuyerAuthGate } from "./BuyerAuthGate";
 import {
   buyerAccessPrompt,
@@ -90,7 +100,13 @@ export default function Atelier() {
     [protectedArtifact, setProtectedArtifact] = useState<ProtectedArtifact | null>(null),
     [sidebarOpen, setSidebarOpen] = useState(false),
     [referenceProductId, setReferenceProductId] = useState<string | null>(initialReferenceProductIdFromUrl),
-    [mallOpen, setMallOpen] = useState(() => new URLSearchParams(window.location.search).get("mall") === "1");
+    [mallOpen, setMallOpen] = useState(() => new URLSearchParams(window.location.search).get("mall") === "1"),
+    [referenceOrder, setReferenceOrder] = useState<ReferenceProductOrderDraft | null>(() => {
+      const product = referenceProductById(initialReferenceProductIdFromUrl());
+      return product
+        ? restoreReferenceProductOrderDraft(product.id) ?? createReferenceProductOrderDraft(newRequestId(), product)
+        : null;
+    });
   const operation = useRef(false),
     requestId = useRef(newRequestId()),
     dirty = useRef(false);
@@ -98,6 +114,51 @@ export default function Atelier() {
   current.current = p;
   const { user: buyer } = useBuyerSession();
   const selectedReferenceProduct = referenceProductById(referenceProductId);
+  const selectedReferenceOrder = referenceOrder?.productId === selectedReferenceProduct?.id ? referenceOrder : null;
+  const selectReferenceProduct = (product: NonNullable<typeof selectedReferenceProduct>) => {
+    setReferenceProductId(product.id);
+    setMallOpen(false);
+    setReceipt("");
+    requestId.current = newRequestId();
+    setReferenceOrder(
+      restoreReferenceProductOrderDraft(product.id) ?? createReferenceProductOrderDraft(requestId.current, product)
+    );
+  };
+  const updateReferenceOrder = (patch: Partial<ReferenceProductOrderDraft>) => {
+    setReferenceOrder(previous => {
+      if (!previous) return previous;
+      const next = { ...previous, ...patch };
+      persistReferenceProductOrderDraft(next);
+      return next;
+    });
+  };
+  const submitSelectedReferenceOrder = () => {
+    if (!selectedReferenceProduct || !selectedReferenceOrder) return;
+    const profile = profilesForReferenceProduct(
+      selectedReferenceProduct.family,
+      selectedReferenceProduct.personalizationProfileIds
+    ).find(item => item.id === selectedReferenceOrder.personalizationProfileId);
+    if (!profile) {
+      setMessage("상품 프리뷰에서 개인화 방식과 내용을 먼저 확인해 주세요.");
+      return;
+    }
+    if (!buyer) {
+      persistReferenceProductOrderDraft(selectedReferenceOrder);
+      setProtectedArtifact("제작 견적 요청");
+      setMessage("제작 요청은 이메일 인증 후 보낼 수 있습니다. 주문 입력 내용은 이 브라우저에 유지됩니다.");
+      return;
+    }
+    void run(async () => {
+      const submittedId = await submitReferenceProductOrder(
+        selectedReferenceProduct,
+        profile,
+        selectedReferenceOrder
+      );
+      clearReferenceProductOrderDraft();
+      setReceipt(submittedId);
+      setMessage("공식 상품 제작 요청이 접수되었습니다. 내 제작 요청에서 진행 상태를 확인할 수 있습니다.");
+    });
+  };
   useEffect(() => {
     const leave = (e: BeforeUnloadEvent) => {
       if (dirty.current) {
@@ -425,8 +486,7 @@ export default function Atelier() {
                   className="at-reference-product-card"
                   key={product.id}
                   onClick={() => {
-                    setReferenceProductId(product.id);
-                    setMallOpen(false);
+                    selectReferenceProduct(product);
                     setSidebarOpen(false);
                   }}
                 >
@@ -441,7 +501,11 @@ export default function Atelier() {
               {selectedReferenceProduct && (
                 <button
                   className="at-reference-return"
-                  onClick={() => setReferenceProductId(null)}
+                  onClick={() => {
+                    setReferenceProductId(null);
+                    setReferenceOrder(null);
+                    setReceipt("");
+                  }}
                 >
                   기본 3D 편집기로 돌아가기
                 </button>
@@ -1149,17 +1213,33 @@ export default function Atelier() {
             {mallOpen ? (
               <ProductMall
                 onSelect={product => {
-                  setReferenceProductId(product.id);
-                  setMallOpen(false);
+                  selectReferenceProduct(product);
                   setMessage(`${product.title}을(를) 선택했습니다. 개인화 방식을 먼저 고른 뒤 내용을 적용해 주세요.`);
                 }}
                 products={referenceProducts}
               />
             ) : selectedReferenceProduct ? (
-              <FiveAngleReferencePreview
-                onMessage={setMessage}
-                product={selectedReferenceProduct}
-              />
+              <>
+                <FiveAngleReferencePreview
+                  onMessage={setMessage}
+                  onPersonalizationConfirm={selection => {
+                    updateReferenceOrder(selection);
+                    setTab("request");
+                  }}
+                  product={selectedReferenceProduct}
+                />
+                {selectedReferenceOrder && (
+                  <ReferenceProductOrderPanel
+                    authenticatedEmail={buyer?.email}
+                    busy={busy}
+                    draft={selectedReferenceOrder}
+                    onChange={updateReferenceOrder}
+                    onSubmit={submitSelectedReferenceOrder}
+                    product={selectedReferenceProduct}
+                    receipt={receipt}
+                  />
+                )}
+              </>
             ) : (
               <ProductPreview
                 authenticated={Boolean(buyer)}

@@ -12,20 +12,27 @@ import {
   profilesForReferenceProduct,
   validatePersonalizationFile,
 } from "./personalizationProfiles";
+import type { ReferenceProductOrderDraft } from "./referenceProductOrder";
 
 const BerneseModelViewer = lazy(() => import("./BerneseModelViewer"));
 
 type Props = {
   product: ReferenceProduct;
   onMessage: (message: string) => void;
+  onPersonalizationConfirm: (
+    selection: Pick<
+      ReferenceProductOrderDraft,
+      "personalizationProfileId" | "personalizationText" | "personalizationArtwork" | "placementLabel"
+    >
+  ) => void;
 };
 
-export function FiveAngleReferencePreview({ product, onMessage }: Props) {
+export function FiveAngleReferencePreview({ product, onMessage, onPersonalizationConfirm }: Props) {
   const [view, setView] = useState<ReferenceViewId>("front");
   const [tagSide, setTagSide] = useState<MemorialTagSide>("front");
   const [tagMessage, setTagMessage] = useState("");
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
-  const [tagArtwork, setTagArtwork] = useState<string | null>(null);
+  const [tagArtwork, setTagArtwork] = useState<ReferenceProductOrderDraft["personalizationArtwork"]>(null);
   const [inputError, setInputError] = useState("");
   const [personalizationStep, setPersonalizationStep] = useState<"method" | "content" | "review">("method");
   const [rotating, setRotating] = useState(false);
@@ -223,7 +230,12 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
                         }
                         const reader = new FileReader();
                         reader.onload = () => {
-                          setTagArtwork(typeof reader.result === "string" ? reader.result : null);
+                          setTagArtwork(typeof reader.result === "string" ? {
+                            dataUrl: reader.result,
+                            name: file.name,
+                            mimeType: file.type as "image/png" | "image/jpeg" | "image/webp",
+                            byteSize: file.size,
+                          } : null);
                           setInputError("");
                         };
                         reader.onerror = () => setInputError("이미지를 읽지 못했습니다. 다른 파일로 다시 시도해 주세요.");
@@ -269,7 +281,15 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
                   <button onClick={() => setPersonalizationStep("content")}>내용 수정</button>
                   <button
                     className="at-primary"
-                    onClick={() => onMessage(`${selectedProfile.label} 프리뷰를 적용했습니다. 제작 접수 전 안전 영역과 제작 방식 조건을 다시 확인해 주세요.`)}
+                    onClick={() => {
+                      onPersonalizationConfirm({
+                        personalizationProfileId: selectedProfile.id,
+                        personalizationText: tagMessage,
+                        personalizationArtwork: tagArtwork,
+                        placementLabel: product.memorialTag.sides[tagSide].label,
+                      });
+                      onMessage(`${selectedProfile.label} 프리뷰를 주문 요약에 반영했습니다. 수량과 희망 납기를 확인해 주세요.`);
+                    }}
                   >
                     이 개인화 방식 선택
                   </button>
@@ -280,7 +300,7 @@ export function FiveAngleReferencePreview({ product, onMessage }: Props) {
           <div className="at-memorial-tag-preview" aria-label={`${product.memorialTag.sides[tagSide].label} 프리뷰`}>
             <img alt="교체형 기념택 빈 양식" src={product.memorialTag.sides[tagSide].image} />
             {selectedProfile?.inputMode === "image" && tagArtwork ? (
-              <img alt="첨부한 브랜드 마크 프리뷰" className="at-memorial-artwork" src={tagArtwork} />
+              <img alt="첨부한 브랜드 마크 프리뷰" className="at-memorial-artwork" src={tagArtwork.dataUrl} />
             ) : (
               <p>{tagMessage.trim() || "기념 문구"}</p>
             )}
