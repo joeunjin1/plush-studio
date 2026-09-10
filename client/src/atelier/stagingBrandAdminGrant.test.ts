@@ -13,6 +13,8 @@ describe("staging brand-admin grant runbook", () => {
     expect(source).toContain("gjtrade@naver.com");
     expect(source).toContain("bernese-memorial-plush-v01");
     expect(source).toContain("Expected exactly one Bernese product organization");
+    expect(source).not.toContain("min(organization_id)");
+    expect(source).toContain("select organization_id");
   });
 
   it("does not create users or mutate authentication configuration", () => {

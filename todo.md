@@ -119,3 +119,4 @@
 - [ ] Re-run the staging administrator Magic Link UAT after the current basic-SMTP email quota resets; custom SMTP and rate-limit changes are intentionally deferred pending separate approval and credentials.
 - [ ] Verify the authenticated staging administrator account's organization membership and, only after approval, grant the minimum brand_admin role required for private GLB intake UAT.
 - [x] Provide a staging-only minimal SQL file that grants `gjtrade@naver.com` brand_admin membership for the existing plush-studio organization without creating accounts or modifying Production.
+- [x] Fix the UUID aggregate error in the staging-only brand_admin grant SQL, validate the no-partial-change guard, and provide a corrected retry file.

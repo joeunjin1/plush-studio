@@ -24,16 +24,20 @@ begin
     raise exception 'No staging auth user found for gjtrade@naver.com';
   end if;
 
-  select count(distinct organization_id)::integer,
-         min(organization_id)
-    into target_organization_count,
-         target_organization_id
+  select count(distinct organization_id)::integer
+    into target_organization_count
   from public.reference_products
   where sku = 'bernese-memorial-plush-v01';
 
   if target_organization_count <> 1 then
     raise exception 'Expected exactly one Bernese product organization; found %', target_organization_count;
   end if;
+
+  select organization_id
+    into target_organization_id
+  from public.reference_products
+  where sku = 'bernese-memorial-plush-v01'
+  limit 1;
 
   insert into public.organization_members (
     organization_id,
