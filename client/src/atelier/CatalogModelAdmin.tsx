@@ -15,6 +15,8 @@ import {
   validateOwnerGlbFile,
   type OwnerGlbAnalysis,
 } from "./ownerModelRegistration";
+import { ReferenceProductMasterIntake } from "./ReferenceProductMasterIntake";
+import { ReferenceProductPhotoIntake } from "./ReferenceProductPhotoIntake";
 import "./catalogModelAdmin.css";
 
 type Organization = { id: string; name: string; slug: string };
@@ -272,8 +274,29 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
       {message && <p aria-live="polite" className="at-model-admin-message">{message}</p>}
 
       <div className="at-model-admin-layout">
+        <section className="at-model-admin-card" aria-label="상품 마스터 초안 등록">
+          <ReferenceProductMasterIntake
+            organizationId={organizationId}
+            userId={user.id}
+            onCreated={async nextProductId => {
+              await load();
+              setProductId(nextProductId);
+            }}
+          />
+        </section>
+
+        {productId && organizationId && (
+          <section className="at-model-admin-card" aria-label="5면 사진 초안 등록">
+            <ReferenceProductPhotoIntake
+              organizationId={organizationId}
+              productId={productId}
+              userId={user.id}
+            />
+          </section>
+        )}
+
         <section className="at-model-admin-card" aria-labelledby="model-draft-title">
-          <div className="at-model-admin-card-heading"><FileUp size={20} /><div><span>01 · DRAFT INTAKE</span><h2 id="model-draft-title">대표 제공 GLB 초안 등록</h2></div></div>
+          <div className="at-model-admin-card-heading"><FileUp size={20} /><div><span>03 · 3D DRAFT</span><h2 id="model-draft-title">대표 제공 GLB 초안 등록</h2></div></div>
           <div className="at-model-admin-fields">
             <label><span>소유 조직</span><select disabled={uploading || organizations.length === 0} onChange={event => setOrganizationId(event.target.value)} value={organizationId}><option value="">조직을 선택하세요</option>{organizations.map(org => <option key={org.id} value={org.id}>{org.name} · {org.slug}</option>)}</select></label>
             <label><span>대상 상품 SKU</span><select disabled={uploading || organizationProducts.length === 0} onChange={event => setProductId(event.target.value)} value={productId}><option value="">상품을 선택하세요</option>{organizationProducts.map(product => <option key={product.id} value={product.id}>{product.sku} · {product.title}</option>)}</select></label>
@@ -286,7 +309,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
         </section>
 
         <section className="at-model-admin-card" aria-labelledby="model-queue-title">
-          <div className="at-model-admin-card-heading"><Boxes size={20} /><div><span>02 · REVIEW QUEUE</span><h2 id="model-queue-title">선택 SKU의 3D 버전</h2></div></div>
+          <div className="at-model-admin-card-heading"><Boxes size={20} /><div><span>04 · REVIEW QUEUE</span><h2 id="model-queue-title">선택 SKU의 3D 버전</h2></div></div>
           {productId ? productModels.length > 0 ? <div className="at-model-admin-table" role="region" aria-label="GLB 검토 대기 목록" tabIndex={0}><table><thead><tr><th>버전</th><th>원본</th><th>검토</th><th>무결성</th><th>공개</th></tr></thead><tbody>{productModels.map(model => <tr key={model.id}><td><b>{model.model_version}</b><small>{new Date(model.uploaded_at).toLocaleDateString("ko-KR")}</small></td><td>{bytesLabel(model.byte_size)}<small>{model.triangle_count === null ? "구조 미등록" : `${numberLabel(model.triangle_count)} triangles`}</small></td><td><span className="at-model-admin-status">{model.review_state}</span></td><td><span className="at-model-admin-status">{model.checksum_verification_state}</span></td><td>{model.is_current && model.visible_to_buyers ? "현재 공개" : "비공개"}</td></tr>)}</tbody></table></div> : <div className="at-model-admin-empty"><HardDrive size={22} /><p>아직 등록된 GLB 메타데이터가 없습니다.</p><span>첫 원본을 초안으로 올린 뒤 검토 큐에서 확인하세요.</span></div> : <div className="at-model-admin-empty"><HardDrive size={22} /><p>대상 상품 SKU를 선택하세요.</p></div>}
         </section>
       </div>
