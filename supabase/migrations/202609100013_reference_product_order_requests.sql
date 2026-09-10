@@ -4,6 +4,8 @@
 begin;
 
 create schema if not exists reference_order_private;
+revoke all on schema reference_order_private from public, anon;
+grant usage on schema reference_order_private to authenticated;
 
 create table if not exists public.reference_product_order_requests (
   id uuid primary key,

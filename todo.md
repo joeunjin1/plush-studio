@@ -124,3 +124,4 @@
 - [x] Redesign the buyer ordering journey around official product selection, valid personalization method, live placement review, quantity and delivery requirements, contact consent, and a single protected request confirmation; staging database activation and live buyer UAT remain pending.
 - [ ] Run iterative staging UAT of the buyer ordering flow on desktop and mobile, capturing friction findings before Production promotion.
 - [ ] Apply staging-only migration 013 to persist authenticated official-product order metadata in buyer-company records and private personalization storage, then verify one real request end to end.
+- [ ] Diagnose the staging official-product order submit RPC failure without retrying the same request ID, then minimally repair only the failing metadata, function, or private-storage contract and repeat one UAT request.

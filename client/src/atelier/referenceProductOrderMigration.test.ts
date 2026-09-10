@@ -22,6 +22,7 @@ describe("reference product order migration", () => {
   });
 
   it("uses an authenticated idempotent submit function instead of direct browser table inserts", () => {
+    expect(source).toContain("grant usage on schema reference_order_private to authenticated");
     expect(source).toContain("if who is null then");
     expect(source).toContain("pg_advisory_xact_lock");
     expect(source).toContain("submit_reference_product_order");
