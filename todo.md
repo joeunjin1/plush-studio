@@ -125,4 +125,4 @@
 - [ ] Run iterative staging UAT of the buyer ordering flow on desktop and mobile, capturing friction findings before Production promotion.
 - [x] Apply staging-only migration 013 to persist authenticated official-product order metadata in buyer-company records and private personalization storage, then verify one real text-personalization request end to end.
 - [x] Diagnose the staging official-product order submit RPC failure without creating a duplicate request, then minimally repair only the private-RPC schema usage contract and repeat one successful UAT request.
-- [ ] Separate generic 3D-maker request controls from the official reference-product order context, and provide an unambiguous buyer confirmation and re-entry path after a reference order is received.
+- [x] Separate generic 3D-maker request controls from the official reference-product order context, and provide an unambiguous buyer confirmation and re-entry path after a reference order is received; the next live reference-order UAT must confirm the receipt state visually.
