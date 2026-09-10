@@ -6,7 +6,9 @@ export const requiredReferencePhotoViews = [
   "top",
 ] as const;
 
-export type ReferencePhotoViewKey = (typeof requiredReferencePhotoViews)[number];
+export const optionalReferencePhotoViews = ["detail"] as const;
+export const allReferencePhotoViews = [...requiredReferencePhotoViews, ...optionalReferencePhotoViews] as const;
+export type ReferencePhotoViewKey = (typeof allReferencePhotoViews)[number];
 
 export const referencePhotoViewLabels: Record<ReferencePhotoViewKey, string> = {
   front: "정면",
@@ -14,6 +16,7 @@ export const referencePhotoViewLabels: Record<ReferencePhotoViewKey, string> = {
   rear: "뒷면",
   right: "우측면",
   top: "윗면",
+  detail: "상세 사진 (선택)",
 };
 
 const uuidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;

@@ -3,6 +3,7 @@ import { ImagePlus, LoaderCircle, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   analyzeReferencePhoto,
+  allReferencePhotoViews,
   hasCompleteRequiredReferencePhotoSet,
   referencePhotoStoragePath,
   referencePhotoViewLabels,
@@ -41,7 +42,7 @@ export function ReferenceProductPhotoIntake({ organizationId, productId, userId 
       .from("reference_product_image_intakes")
       .select("view_key, review_state")
       .eq("reference_product_id", productId)
-      .in("view_key", requiredReferencePhotoViews);
+      .in("view_key", allReferencePhotoViews);
     if (error) {
       setMessage(error.code === "42P01" ? "migration 015를 staging에 적용하면 5면 사진 초안 등록을 시작할 수 있습니다." : "기존 5면 사진 초안을 불러오지 못했습니다.");
       return;
@@ -79,7 +80,8 @@ export function ReferenceProductPhotoIntake({ organizationId, productId, userId 
     const uploadedPaths: string[] = [];
     const insertedPaths: string[] = [];
     try {
-      for (const viewKey of requiredReferencePhotoViews) {
+      const selectedViews = allReferencePhotoViews.filter(viewKey => files[viewKey] instanceof File);
+      for (const viewKey of selectedViews) {
         const file = files[viewKey]!;
         const fileAnalysis = analysis[viewKey]!;
         const storagePath = referencePhotoStoragePath(organizationId, productId, viewKey, file.name);
@@ -123,9 +125,9 @@ export function ReferenceProductPhotoIntake({ organizationId, productId, userId 
         <ImagePlus size={20} />
         <div><span>02 · FIVE-VIEW DRAFT</span><h2 id="photo-intake-title">공식 5면 사진 초안 등록</h2></div>
       </div>
-      <p className="at-photo-intake-copy">정면·좌측·뒷면·우측·윗면은 모두 필요합니다. 원본은 private storage에 보관되며, 승인 전에는 buyer mall에 표시되지 않습니다.</p>
+      <p className="at-photo-intake-copy">정면·좌측·뒷면·우측·윗면은 모두 필요하며 상세 사진은 선택입니다. 원본은 private storage에 보관되며, 승인 전에는 buyer mall에 표시되지 않습니다.</p>
       <div className="at-photo-intake-grid">
-        {requiredReferencePhotoViews.map(viewKey => {
+        {allReferencePhotoViews.map(viewKey => {
           const selected = files[viewKey];
           const row = existing.find(item => item.view_key === viewKey);
           return (

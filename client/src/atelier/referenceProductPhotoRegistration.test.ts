@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   hasCompleteRequiredReferencePhotoSet,
+  allReferencePhotoViews,
   referencePhotoStoragePath,
   requiredReferencePhotoViews,
 } from "./referenceProductPhotoRegistration";
@@ -19,6 +20,7 @@ describe("reference product photo registration", () => {
     const complete = Object.fromEntries(requiredReferencePhotoViews.map(view => [view, new File(["x"], `${view}.webp`, { type: "image/webp" })]));
     expect(hasCompleteRequiredReferencePhotoSet(complete)).toBe(true);
     expect(hasCompleteRequiredReferencePhotoSet({ front: complete.front })).toBe(false);
+    expect(allReferencePhotoViews).toContain("detail");
   });
 
   it("cleans up private files and metadata when a batch intake does not complete", () => {
