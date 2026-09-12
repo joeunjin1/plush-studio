@@ -31,4 +31,14 @@ describe("five-angle reference preview", () => {
     expect(source).toContain("프리뷰 확인");
     expect(source).toContain("이 개인화 방식 선택");
   });
+
+  it("supports image or text personalization for non-memorial products such as reviewed bag SKUs", () => {
+    expect(source).toContain("!product.memorialTag.enabled");
+    expect(source).toContain("상품 로고 및 문구 개인화 설정");
+    expect(source).toContain("정면 안전영역 참고 프리뷰");
+    expect(source).toContain("원본은 요청 접수 시 private 보관함에만 저장됩니다.");
+    expect(source).toContain("const hasPersonalizationContent");
+    expect(source).toContain('selectedProfile.inputMode === "text"');
+    expect(source).toContain('selectedProfile.inputMode === "image"');
+  });
 });

@@ -46,6 +46,20 @@
 .at-model-admin-guard svg { color: var(--at-accent); flex: 0 0 auto; margin-top: 0.08rem; }
 .at-model-admin-guard p { font-size: 0.85rem; margin-bottom: 0; }
 .at-model-admin-message { margin: 0 auto 1rem; max-width: 82rem; padding: 0.8rem 1rem; }
+.at-admin-workflow { background: var(--at-card); border: 1px solid var(--at-line); border-radius: 1rem; margin: 0 auto 1rem; max-width: 82rem; padding: 1rem; }
+.at-admin-workflow-heading { align-items: baseline; display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.at-admin-workflow-heading span { color: var(--at-muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; }
+.at-admin-workflow-heading p { color: var(--at-muted); font-size: 0.78rem; margin: 0; }
+.at-admin-workflow ol { display: grid; gap: 0.6rem; list-style: none; margin: 0.9rem 0 0; padding: 0; }
+.at-admin-workflow li { align-items: flex-start; background: var(--at-soft); border: 1px solid var(--at-line); border-radius: 0.7rem; display: flex; gap: 0.6rem; padding: 0.7rem; }
+.at-admin-workflow li > b { align-items: center; background: var(--at-card); border: 1px solid var(--at-line); border-radius: 999rem; display: inline-flex; font-size: 0.7rem; height: 1.5rem; justify-content: center; width: 1.5rem; }
+.at-admin-workflow li > span { display: grid; gap: 0.18rem; }
+.at-admin-workflow li strong { font-size: 0.8rem; }
+.at-admin-workflow li small { color: var(--at-muted); font-size: 0.7rem; line-height: 1.45; }
+.at-admin-workflow li[data-state="complete"] { border-color: var(--at-accent); }
+.at-admin-workflow li[data-state="complete"] > b { background: var(--at-accent); border-color: var(--at-accent); color: var(--at-page); }
+.at-admin-workflow li[data-state="current"] { border-color: var(--at-line-strong); box-shadow: inset 0 0 0 1px var(--at-line); }
+.at-admin-workflow li[data-state="locked"] { opacity: 0.72; }
 .at-model-admin-layout { display: grid; gap: 1rem; margin: 0 auto; max-width: 82rem; }
 .at-model-admin-card { min-width: 0; padding: 1rem; }
 .at-model-admin-card-heading { align-items: flex-start; display: flex; gap: 0.65rem; margin-bottom: 1rem; }
@@ -133,6 +147,8 @@
   .at-model-admin-header { align-items: flex-end; flex-direction: row; justify-content: space-between; }
   .at-model-admin-header > button { align-self: auto; }
   .at-model-admin-layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); }
+  .at-admin-workflow ol { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .at-admin-workflow li { min-height: 6.4rem; }
   .at-model-admin-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .at-model-admin-analysis { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }

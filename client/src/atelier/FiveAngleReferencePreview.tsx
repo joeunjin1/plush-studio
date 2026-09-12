@@ -41,6 +41,15 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
   const [failedImages, setFailedImages] = useState<string[]>([]);
   const profiles = profilesForReferenceProduct(product.family, product.personalizationProfileIds);
   const selectedProfile = profiles.find(profile => profile.id === selectedProfileId) ?? null;
+  const hasPersonalizationContent = Boolean(
+    selectedProfile && (
+      selectedProfile.inputMode === "text"
+        ? tagMessage.trim()
+        : selectedProfile.inputMode === "image"
+          ? tagArtwork
+          : tagMessage.trim() || tagArtwork
+    )
+  );
 
   useEffect(() => {
     Object.values(product.views).forEach(({ image }) => {
@@ -250,7 +259,7 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
                   <button onClick={() => setPersonalizationStep("method")}>방식 다시 고르기</button>
                   <button
                     className="at-primary"
-                    disabled={selectedProfile.inputMode === "text" ? !tagMessage.trim() : !tagArtwork}
+                    disabled={!hasPersonalizationContent}
                     onClick={() => {
                       setPersonalizationStep("review");
                       onMessage("개인화 프리뷰를 만들었습니다. 아래 택 면과 안전 영역을 확인해 주세요.");
@@ -305,6 +314,125 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
               <p>{tagMessage.trim() || "기념 문구"}</p>
             )}
             <small>{product.memorialTag.sides[tagSide].label}</small>
+          </div>
+        </section>
+      )}
+
+      {!product.memorialTag.enabled && (
+        <section className="at-generic-personalization" aria-label="상품 로고 및 문구 개인화 설정">
+          <div className="at-memorial-copy">
+            <span>PRODUCT PERSONALIZATION</span>
+            {personalizationStep === "method" && (
+              <>
+                <h3>상품에 적용할 방식은 무엇인가요?</h3>
+                <p>이 가방에 승인된 방식만 선택할 수 있습니다. 로고·문구는 제작 검토용 참고 프리뷰이며, 실제 위치와 크기는 공장 검토 후 확정됩니다.</p>
+                <div className="at-personalization-options" aria-label="가방 개인화 방식 선택">
+                  {profiles.map(profile => (
+                    <button
+                      aria-pressed={selectedProfileId === profile.id}
+                      key={profile.id}
+                      onClick={() => {
+                        setSelectedProfileId(profile.id);
+                        setInputError("");
+                        setPersonalizationStep("content");
+                      }}
+                    >
+                      <b>{profile.label}</b>
+                      <small>{profile.description}</small>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+            {selectedProfile && personalizationStep === "content" && (
+              <div className="at-personalization-editor">
+                <h3>{selectedProfile.inputMode === "image" ? "브랜드 로고를 올려 주세요" : "문구 또는 브랜드 로고를 입력해 주세요"}</h3>
+                <p><b>{selectedProfile.label}</b> · {selectedProfile.constraints.safeAreaLabel}</p>
+                <p className="at-factory-review-note"><b>공장 검토 기준</b> · {selectedProfile.factoryReviewNote}</p>
+                {selectedProfile.inputMode !== "image" && (
+                  <label className="at-memorial-input">
+                    <span>적용 문구 {selectedProfile.constraints.maxCharacters ? `· 최대 ${selectedProfile.constraints.maxCharacters}자` : ""}</span>
+                    <textarea
+                      maxLength={selectedProfile.constraints.maxCharacters}
+                      onChange={event => setTagMessage(constrainPersonalizationText(event.target.value, selectedProfile.constraints))}
+                      placeholder="예: BRAND NAME"
+                      rows={selectedProfile.constraints.maxLines ?? 3}
+                      value={tagMessage}
+                    />
+                    {selectedProfile.constraints.maxCharacters && <small>{tagMessage.length} / {selectedProfile.constraints.maxCharacters}</small>}
+                  </label>
+                )}
+                {selectedProfile.inputMode !== "text" && (
+                  <label className="at-personalization-upload">
+                    <span>브랜드 로고 이미지 첨부</span>
+                    <input
+                      accept={selectedProfile.constraints.acceptedMimeTypes?.join(",")}
+                      aria-label="브랜드 로고 이미지 첨부"
+                      type="file"
+                      onChange={event => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        if (!file) return;
+                        const error = validatePersonalizationFile(file, selectedProfile.constraints);
+                        if (error) {
+                          setInputError(error);
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setTagArtwork(typeof reader.result === "string" ? {
+                            dataUrl: reader.result,
+                            name: file.name,
+                            mimeType: file.type as "image/png" | "image/jpeg" | "image/webp",
+                            byteSize: file.size,
+                          } : null);
+                          setInputError("");
+                        };
+                        reader.onerror = () => setInputError("로고 이미지를 읽지 못했습니다. 다른 파일로 다시 시도해 주세요.");
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                    <small>PNG, JPG, WebP · 최대 {selectedProfile.constraints.maximumFileMegabytes}MB · 원본은 요청 접수 시 private 보관함에만 저장됩니다.</small>
+                  </label>
+                )}
+                {inputError && <p className="at-personalization-error" role="alert">{inputError}</p>}
+                <div className="at-personalization-actions">
+                  <button onClick={() => setPersonalizationStep("method")}>방식 다시 고르기</button>
+                  <button className="at-primary" disabled={!hasPersonalizationContent} onClick={() => setPersonalizationStep("review")}>정면 프리뷰 확인</button>
+                </div>
+              </div>
+            )}
+            {selectedProfile && personalizationStep === "review" && (
+              <div className="at-personalization-review">
+                <h3>정면 안전영역 참고 프리뷰</h3>
+                <p>{selectedProfile.label} · {selectedProfile.constraints.safeAreaLabel}. 이 화면은 위치·크기 검토를 위한 참고용이며, 실제 제작 위치는 공장 검토 후 확정됩니다.</p>
+                <p className="at-factory-review-note"><b>공장 검토 기준</b> · {selectedProfile.factoryReviewNote}</p>
+                <div className="at-personalization-actions">
+                  <button onClick={() => setPersonalizationStep("content")}>내용 수정</button>
+                  <button
+                    className="at-primary"
+                    onClick={() => {
+                      onPersonalizationConfirm({
+                        personalizationProfileId: selectedProfile.id,
+                        personalizationText: tagMessage,
+                        personalizationArtwork: tagArtwork,
+                        placementLabel: selectedProfile.constraints.safeAreaLabel,
+                      });
+                      onMessage(`${selectedProfile.label} 참고 프리뷰를 주문 요약에 반영했습니다. 수량과 희망 납기를 확인해 주세요.`);
+                    }}
+                  >
+                    이 개인화 방식 선택
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="at-generic-personalization-preview" aria-label="정면 안전영역 참고 프리뷰">
+            <img alt={`${product.title} 정면 기준 이미지`} src={product.views.front.image} />
+            <div className="at-generic-personalization-artwork">
+              {tagArtwork ? <img alt="첨부한 브랜드 로고 참고 프리뷰" src={tagArtwork.dataUrl} /> : <p>{tagMessage.trim() || "LOGO · TEXT"}</p>}
+            </div>
+            <small>{selectedProfile?.constraints.safeAreaLabel ?? "개인화 방식을 선택해 주세요"}</small>
           </div>
         </section>
       )}

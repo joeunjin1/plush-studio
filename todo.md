@@ -121,7 +121,9 @@
 - [ ] Bootstrap exactly one staging-only plush-studio organization and minimum brand_admin membership after the verified empty-organization preflight, then resume private catalog administrator UAT.
 - [ ] Register one real bag product through the staging product-master, five-view intake, personalization binding, review, and buyer-publication workflow after minimum brand_admin bootstrap is verified.
 - [ ] Run one authenticated buyer logo-upload order for an approved bag SKU, verifying private logo storage, safe placement preview, metadata-only request persistence, buyer history, and no public source-path exposure.
+- [x] Add a generic non-memorial personalization flow so DB-backed bags with approved image/text profiles can show a safe-area reference preview and carry buyer logos into the protected order workflow.
 - [ ] Audit and improve buyer and administrator task flows for minimal steps, clear progress/error/re-entry states, mobile touch targets, and role-appropriate information before Production promotion.
+- [x] Add a staged administrator registration path that makes product master, mandatory five-view photos, personalization binding, and buyer publication status explicit without weakening review gates.
 - [x] Provide a staging-only minimal SQL file that grants `gjtrade@naver.com` brand_admin membership for the existing plush-studio organization without creating accounts or modifying Production.
 - [x] Fix the UUID aggregate error in the staging-only brand_admin grant SQL, validate the no-partial-change guard, and provide a corrected retry file.
 - [x] Create and maintain a release runbook that distinguishes GitHub code merge, Supabase Production migrations, approved catalog-asset promotion, and Auth redirect verification so staging work can be safely promoted only after UAT.

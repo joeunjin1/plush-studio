@@ -98,6 +98,35 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
     [photoIntakes, productId]
   );
   const photoPublicationReady = Boolean(fiveRequiredPhotoIntakes(selectedPhotoIntakes));
+  const selectedProduct = organizationProducts.find(product => product.id === productId) ?? null;
+  const workflowSteps = [
+    {
+      number: "01",
+      label: "상품 마스터",
+      detail: selectedProduct ? `${selectedProduct.sku} 초안 선택됨` : "SKU·치수·CBM을 먼저 등록하세요.",
+      state: selectedProduct ? "complete" : "current",
+    },
+    {
+      number: "02",
+      label: "필수 5면 사진",
+      detail: selectedProduct
+        ? photoPublicationReady ? "필수 5면이 private 검토 대기 중입니다." : "정면·좌·후·우·상면 사진이 필요합니다."
+        : "상품 초안을 만든 뒤 사진을 접수합니다.",
+      state: photoPublicationReady ? "complete" : selectedProduct ? "current" : "locked",
+    },
+    {
+      number: "03",
+      label: "개인화 방식",
+      detail: selectedProduct ? "이 상품에 사용할 로고·인쇄 방식을 연결하세요." : "상품군에 맞는 방식을 다음 단계에서 연결합니다.",
+      state: selectedProduct && photoPublicationReady ? "current" : "locked",
+    },
+    {
+      number: "04",
+      label: "buyer 공개",
+      detail: selectedProduct?.visible_to_buyers ? "buyer mall에 공개된 상품입니다." : "5면 검토와 개인화 연결 후에만 공개할 수 있습니다.",
+      state: selectedProduct?.visible_to_buyers ? "complete" : "locked",
+    },
+  ] as const;
 
   const load = async () => {
     if (!supabase || !user) return;
@@ -325,6 +354,13 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
       <section className="at-model-admin-guard" aria-label="공개 전 검토 기준"><ShieldCheck size={19} /><p><b>공개 게이트:</b> 상품 권리·상품 승인, GLB SHA-256 확인, 5면 비교, 모델 검토, public catalog 승인 복사본이 모두 완료돼야 현재 구매자 3D 모델로 승격할 수 있습니다.</p></section>
       {message && <p aria-live="polite" className="at-model-admin-message">{message}</p>}
 
+      <section className="at-admin-workflow" aria-label="상품 등록 작업 순서">
+        <div className="at-admin-workflow-heading"><span>REGISTRATION PATH</span><p>가방과 인형 등 모든 공식 상품은 같은 순서로 초안·검토·공개합니다.</p></div>
+        <ol>
+          {workflowSteps.map(step => <li data-state={step.state} key={step.number}><b>{step.number}</b><span><strong>{step.label}</strong><small>{step.detail}</small></span></li>)}
+        </ol>
+      </section>
+
       <div className="at-model-admin-layout">
         <section className="at-model-admin-card" aria-label="상품 마스터 초안 등록">
           <ReferenceProductMasterIntake
@@ -365,7 +401,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
           ) : <div className="at-model-admin-empty"><HardDrive size={22} /><p>대상 상품 SKU를 선택하세요.</p><span>상품 초안과 필수 5면을 먼저 등록한 뒤 검토 큐가 활성화됩니다.</span></div>}
         </section>
 
-        {productId && organizationId && organizationProducts.find(product => product.id === productId) && <section className="at-model-admin-card" aria-label="상품별 개인화 방식 연결"><ReferenceProductPersonalizationBinding organizationId={organizationId} productFamily={organizationProducts.find(product => product.id === productId)!.product_family} productId={productId} /></section>}
+        {productId && organizationId && selectedProduct && <section className="at-model-admin-card" aria-label="상품별 개인화 방식 연결"><ReferenceProductPersonalizationBinding organizationId={organizationId} productFamily={selectedProduct.product_family} productId={productId} /></section>}
 
         <section className="at-model-admin-card" aria-labelledby="model-draft-title">
           <div className="at-model-admin-card-heading"><FileUp size={20} /><div><span>03 · 3D DRAFT</span><h2 id="model-draft-title">대표 제공 GLB 초안 등록</h2></div></div>

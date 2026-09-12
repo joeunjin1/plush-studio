@@ -27,4 +27,11 @@ describe("protected owner GLB intake screen", () => {
     expect(source).toContain("emailRedirectTo: catalogAdminMagicLinkRedirectUrl()");
     expect(source).toContain("buyerMagicLinkErrorMessage(error)");
   });
+
+  it("guides brand-admins through the product, photo, personalization, and buyer-publication sequence", () => {
+    expect(source).toContain("REGISTRATION PATH");
+    expect(source).toContain("필수 5면 사진");
+    expect(source).toContain("개인화 방식");
+    expect(source).toContain("buyer 공개");
+  });
 });
