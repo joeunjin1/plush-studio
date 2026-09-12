@@ -130,3 +130,4 @@
 - [ ] Add a brand_admin-only reviewed-photo publication action that copies approved private photo intakes to the public catalog and registers only the five required reviewed views as buyer-visible assets.
 - [ ] Connect the buyer mall to database-backed approved reference products, retaining the current source catalog only as a staging fallback until the first DB-backed product passes end-to-end UAT.
 - [ ] Add brand_admin product-to-personalization-profile binding so each DB-backed buyer-visible SKU has at least one reusable, eligible personalization method.
+- [x] Provide a single-result, read-only staging brand_admin preflight query so the Supabase SQL Editor visibly returns the real organization and current membership status before any permission UAT.
