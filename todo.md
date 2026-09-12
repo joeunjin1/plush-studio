@@ -118,6 +118,10 @@
 - [x] Correct the staging-only Supabase Auth redirect configuration that falls back to an obsolete immutable Preview, then re-run the administrator Magic Link UAT on the current staging alias.
 - [x] Re-run the staging administrator Magic Link UAT after the current basic-SMTP email quota resets; custom SMTP and rate-limit changes are intentionally deferred pending separate approval and credentials.
 - [ ] Verify the authenticated staging administrator account's organization membership and, only after approval, grant the minimum brand_admin role required for private GLB intake UAT.
+- [ ] Bootstrap exactly one staging-only plush-studio organization and minimum brand_admin membership after the verified empty-organization preflight, then resume private catalog administrator UAT.
+- [ ] Register one real bag product through the staging product-master, five-view intake, personalization binding, review, and buyer-publication workflow after minimum brand_admin bootstrap is verified.
+- [ ] Run one authenticated buyer logo-upload order for an approved bag SKU, verifying private logo storage, safe placement preview, metadata-only request persistence, buyer history, and no public source-path exposure.
+- [ ] Audit and improve buyer and administrator task flows for minimal steps, clear progress/error/re-entry states, mobile touch targets, and role-appropriate information before Production promotion.
 - [x] Provide a staging-only minimal SQL file that grants `gjtrade@naver.com` brand_admin membership for the existing plush-studio organization without creating accounts or modifying Production.
 - [x] Fix the UUID aggregate error in the staging-only brand_admin grant SQL, validate the no-partial-change guard, and provide a corrected retry file.
 - [x] Create and maintain a release runbook that distinguishes GitHub code merge, Supabase Production migrations, approved catalog-asset promotion, and Auth redirect verification so staging work can be safely promoted only after UAT.
