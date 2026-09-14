@@ -379,39 +379,39 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
           />
         </section>
 
-        {productId && organizationId && (
-          <section className="at-model-admin-card at-admin-stage-card at-admin-stage-evidence" aria-label="5면 사진 초안 등록">
-            <ReferenceProductPhotoIntake
-            organizationId={organizationId}
-            onRegistered={load}
-            productId={productId}
-              userId={user.id}
-            />
+        {!productId ? <aside className="at-admin-preflight-card" aria-label="다음 작업 안내">
+          <div><span>NEXT ACTION</span><h2>상품 마스터부터 등록하세요</h2><p>SKU와 실물·박스 치수를 저장하면 같은 화면에서 5면 증거, 허용 개인화 방식, buyer 공개 검토를 이어갈 수 있습니다.</p></div>
+          <ol><li><b>01</b><span><strong>상품 마스터 저장</strong><small>중복 SKU와 기본 치수 확인</small></span></li><li><b>02</b><span><strong>5면 실물 증거 등록</strong><small>front · left · rear · right · top</small></span></li><li><b>03</b><span><strong>허용 사양과 공개 검토</strong><small>buyer 노출 전 승인</small></span></li></ol>
+        </aside> : <>
+          {organizationId && (
+            <section className="at-model-admin-card at-admin-stage-card at-admin-stage-evidence" aria-label="5면 사진 초안 등록">
+              <ReferenceProductPhotoIntake
+                organizationId={organizationId}
+                onRegistered={load}
+                productId={productId}
+                userId={user.id}
+              />
+            </section>
+          )}
+
+          <section className="at-model-admin-card at-admin-stage-card at-admin-stage-review" aria-labelledby="photo-review-title">
+            <div className="at-model-admin-card-heading"><ShieldCheck size={20} /><div><span>03 · PHOTO REVIEW</span><h2 id="photo-review-title">5면 사진 검토 · buyer 공개</h2></div></div>
+            <p className="at-model-admin-footnote">필수 5면이 모두 private 초안으로 등록된 뒤, 권리·프레이밍·상품 동일성을 확인한 brand_admin만 public catalog 복사본으로 승격할 수 있습니다. 상세 사진은 buyer 공개 승격 대상이 아닙니다.</p>
+            <div className="at-photo-review-status" aria-label="선택 SKU 사진 검토 상태">
+              {["front", "left", "rear", "right", "top"].map(view => {
+                const intake = selectedPhotoIntakes.find(item => item.view_key === view);
+                return <span data-ready={Boolean(intake)} key={view}>{view} · {intake?.review_state ?? "미등록"}</span>;
+              })}
+            </div>
+            <label className="at-model-admin-note"><span>검토 메모 (선택)</span><textarea disabled={photoPublishing} maxLength={2000} onChange={event => setPhotoReviewNote(event.target.value)} placeholder="예: 실물 색상·프레이밍·권리 확인 완료" value={photoReviewNote} /></label>
+            <button className="at-primary at-model-admin-submit" disabled={photoPublishing || !photoPublicationReady} onClick={() => void publishPhotoCopies()} type="button">{photoPublishing ? "public catalog 복사 중…" : photoPublicationReady ? "검토 완료 · 5면 buyer 공개" : "필수 5면 초안이 필요합니다"}</button>
           </section>
-        )}
 
-        <section className="at-model-admin-card at-admin-stage-card at-admin-stage-review" aria-labelledby="photo-review-title">
-          <div className="at-model-admin-card-heading"><ShieldCheck size={20} /><div><span>03 · PHOTO REVIEW</span><h2 id="photo-review-title">5면 사진 검토 · buyer 공개</h2></div></div>
-          {productId ? (
-            <>
-              <p className="at-model-admin-footnote">필수 5면이 모두 private 초안으로 등록된 뒤, 권리·프레이밍·상품 동일성을 확인한 brand_admin만 public catalog 복사본으로 승격할 수 있습니다. 상세 사진은 buyer 공개 승격 대상이 아닙니다.</p>
-              <div className="at-photo-review-status" aria-label="선택 SKU 사진 검토 상태">
-                {["front", "left", "rear", "right", "top"].map(view => {
-                  const intake = selectedPhotoIntakes.find(item => item.view_key === view);
-                  return <span data-ready={Boolean(intake)} key={view}>{view} · {intake?.review_state ?? "미등록"}</span>;
-                })}
-              </div>
-              <label className="at-model-admin-note"><span>검토 메모 (선택)</span><textarea disabled={photoPublishing} maxLength={2000} onChange={event => setPhotoReviewNote(event.target.value)} placeholder="예: 실물 색상·프레이밍·권리 확인 완료" value={photoReviewNote} /></label>
-              <button className="at-primary at-model-admin-submit" disabled={photoPublishing || !photoPublicationReady} onClick={() => void publishPhotoCopies()} type="button">{photoPublishing ? "public catalog 복사 중…" : photoPublicationReady ? "검토 완료 · 5면 buyer 공개" : "필수 5면 초안이 필요합니다"}</button>
-            </>
-          ) : <div className="at-model-admin-empty"><HardDrive size={22} /><p>대상 상품 SKU를 선택하세요.</p><span>상품 초안과 필수 5면을 먼저 등록한 뒤 검토 큐가 활성화됩니다.</span></div>}
-        </section>
+          {organizationId && selectedProduct && <section className="at-model-admin-card at-admin-stage-card at-admin-stage-spec" aria-label="상품별 개인화 방식 연결"><ReferenceProductPersonalizationBinding organizationId={organizationId} productFamily={selectedProduct.product_family} productId={productId} /></section>}
 
-        {productId && organizationId && selectedProduct && <section className="at-model-admin-card at-admin-stage-card at-admin-stage-spec" aria-label="상품별 개인화 방식 연결"><ReferenceProductPersonalizationBinding organizationId={organizationId} productFamily={selectedProduct.product_family} productId={productId} /></section>}
+          {selectedProduct && <section className="at-model-admin-card at-admin-stage-card at-admin-stage-spec" aria-label="상품별 본체 및 손잡이 색상 옵션"><ReferenceProductColorOptions onSaved={load} productId={productId} supabase={supabase} /></section>}
 
-        {productId && selectedProduct && <section className="at-model-admin-card at-admin-stage-card at-admin-stage-spec" aria-label="상품별 본체 및 손잡이 색상 옵션"><ReferenceProductColorOptions onSaved={load} productId={productId} supabase={supabase} /></section>}
-
-        <section className="at-model-admin-card at-admin-stage-card at-admin-stage-model" aria-labelledby="model-draft-title">
+          <section className="at-model-admin-card at-admin-stage-card at-admin-stage-model" aria-labelledby="model-draft-title">
           <div className="at-model-admin-card-heading"><FileUp size={20} /><div><span>03 · 3D DRAFT</span><h2 id="model-draft-title">대표 제공 GLB 초안 등록</h2></div></div>
           <div className="at-model-admin-fields">
             <label><span>소유 조직</span><select disabled={uploading || organizations.length === 0} onChange={event => setOrganizationId(event.target.value)} value={organizationId}><option value="">조직을 선택하세요</option>{organizations.map(org => <option key={org.id} value={org.id}>{org.name} · {org.slug}</option>)}</select></label>
@@ -422,12 +422,13 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
           {file && analysis && <div className="at-model-admin-analysis"><div><span>원본</span><b>{file.name}</b><small>{bytesLabel(file.size)} · SHA-256 {checksum.slice(0, 12)}…</small></div><div><span>구조</span><b>{numberLabel(analysis.meshCount)} mesh · {numberLabel(analysis.triangleCount)} triangles</b><small>{numberLabel(analysis.materialCount)} material · {numberLabel(analysis.embeddedTextureCount)} texture · {analysis.hasAnimations ? "animation 포함" : "animation 없음"}</small></div></div>}
           <button className="at-primary at-model-admin-submit" disabled={uploading || !migrationReady || !file || !analysis || !checksum || !organizationId || !productId || versionExists} onClick={() => void submitDraft()} type="button">{uploading ? "초안 등록 중…" : versionExists ? "동일 버전이 이미 존재합니다" : "private 원본 · 초안 메타데이터 등록"}</button>
           <small className="at-model-admin-footnote">허용 형식은 GLB 2.0이며, 최대 200MB입니다. 이 단계에서는 public catalog 업로드·구매자 공개·기존 버전 대체를 수행하지 않습니다.</small>
-        </section>
+          </section>
 
-        <section className="at-model-admin-card at-admin-stage-card at-admin-stage-queue" aria-labelledby="model-queue-title">
+          <section className="at-model-admin-card at-admin-stage-card at-admin-stage-queue" aria-labelledby="model-queue-title">
           <div className="at-model-admin-card-heading"><Boxes size={20} /><div><span>04 · REVIEW QUEUE</span><h2 id="model-queue-title">선택 SKU의 3D 버전</h2></div></div>
           {productId ? productModels.length > 0 ? <div className="at-model-admin-table" role="region" aria-label="GLB 검토 대기 목록" tabIndex={0}><table><thead><tr><th>버전</th><th>원본</th><th>검토</th><th>무결성</th><th>공개</th></tr></thead><tbody>{productModels.map(model => <tr key={model.id}><td><b>{model.model_version}</b><small>{new Date(model.uploaded_at).toLocaleDateString("ko-KR")}</small></td><td>{bytesLabel(model.byte_size)}<small>{model.triangle_count === null ? "구조 미등록" : `${numberLabel(model.triangle_count)} triangles`}</small></td><td><span className="at-model-admin-status">{model.review_state}</span></td><td><span className="at-model-admin-status">{model.checksum_verification_state}</span></td><td>{model.is_current && model.visible_to_buyers ? "현재 공개" : "비공개"}</td></tr>)}</tbody></table></div> : <div className="at-model-admin-empty"><HardDrive size={22} /><p>아직 등록된 GLB 메타데이터가 없습니다.</p><span>첫 원본을 초안으로 올린 뒤 검토 큐에서 확인하세요.</span></div> : <div className="at-model-admin-empty"><HardDrive size={22} /><p>대상 상품 SKU를 선택하세요.</p></div>}
-        </section>
+          </section>
+        </>}
       </div>
     </main>
   );
