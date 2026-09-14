@@ -1525,7 +1525,8 @@
   overflow-wrap: anywhere;
   color: #305832 !important;
 }
-.atelier {
+.atelier,
+.at-model-admin {
   --at-card: #ffffff;
   --at-ink: #2e4536;
   --at-muted: #71806a;
