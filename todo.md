@@ -150,3 +150,5 @@
 - [x] Set the primary buyer entry and official-product catalog copy around the B2B flow of real product evidence → approved specification → protected factory-review request, and document the staging-only operational boundary.
 - [x] Draft and statically validate a non-destructive staging-only follow-up migration that defaults and protects SKU option `created_by` without touching existing orders or assets.
 - [ ] Apply migration 019 in staging and verify a logged-in brand_admin can save and re-save SKU color rules before bag registration.
+- [ ] Audit the existing staging Supabase Magic Link session lifecycle and restore route without changing Auth, role, or redirect configuration; minimize repeated administrator sign-in prompts.
+- [x] Make the official real-product mall the default plush-studio buyer home, with approved multi-view/3D products as the primary conversion path and the free 3D maker retained as a secondary route.

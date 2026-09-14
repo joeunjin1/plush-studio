@@ -78,6 +78,10 @@ function initialReferenceProductIdFromUrl() {
   const id = new URLSearchParams(window.location.search).get("reference");
   return referenceProductById(id)?.id ?? null;
 }
+function initialProductMallOpen() {
+  const search = new URLSearchParams(window.location.search);
+  return search.get("maker") !== "1" && !search.get("reference");
+}
 export default function Atelier() {
   const [p, setP] = useState<Project>(initialProjectFromUrl),
     [tab, setTab] = useState("template"),
@@ -100,10 +104,10 @@ export default function Atelier() {
     [receipt, setReceipt] = useState(""),
     [protectedArtifact, setProtectedArtifact] = useState<ProtectedArtifact | null>(null),
     [sidebarOpen, setSidebarOpen] = useState(false),
-    [referenceProductId, setReferenceProductId] = useState<string | null>(() => referenceProductById(initialReferenceProductIdFromUrl())?.id ?? referenceProducts[0]?.id ?? null),
-    [mallOpen, setMallOpen] = useState(() => new URLSearchParams(window.location.search).get("mall") === "1"),
+    [referenceProductId, setReferenceProductId] = useState<string | null>(initialReferenceProductIdFromUrl),
+    [mallOpen, setMallOpen] = useState(initialProductMallOpen),
     [referenceOrder, setReferenceOrder] = useState<ReferenceProductOrderDraft | null>(() => {
-      const product = referenceProductById(initialReferenceProductIdFromUrl()) ?? referenceProducts[0];
+      const product = referenceProductById(initialReferenceProductIdFromUrl());
       return product
         ? restoreReferenceProductOrderDraft(product.id) ?? createReferenceProductOrderDraft(newRequestId(), product)
         : null;
@@ -123,7 +127,6 @@ export default function Atelier() {
       ? null
       : referenceProductById(referenceProductId));
   const selectedReferenceOrder = referenceOrder?.productId === selectedReferenceProduct?.id ? referenceOrder : null;
-  const defaultReferenceResolved = useRef(false);
   const selectReferenceProduct = (product: NonNullable<typeof selectedReferenceProduct>) => {
     setReferenceProductId(product.id);
     setMallOpen(false);
@@ -133,13 +136,13 @@ export default function Atelier() {
       restoreReferenceProductOrderDraft(product.id) ?? createReferenceProductOrderDraft(requestId.current, product)
     );
   };
-  useEffect(() => {
-    if (defaultReferenceResolved.current || !approvedReferenceProductsReady || approvedReferenceProducts.length === 0 || approvedReferenceProducts.some(product => product.id === referenceProductId)) return;
-    const firstApprovedProduct = approvedReferenceProducts[0];
-    defaultReferenceResolved.current = true;
-    setReferenceProductId(firstApprovedProduct.id);
-    setReferenceOrder(restoreReferenceProductOrderDraft(firstApprovedProduct.id) ?? createReferenceProductOrderDraft(newRequestId(), firstApprovedProduct));
-  }, [approvedReferenceProducts, approvedReferenceProductsReady, referenceProductId]);
+  const openFreeDesign = () => {
+    setMallOpen(false);
+    setReferenceProductId(null);
+    setReferenceOrder(null);
+    setReceipt("");
+    setMessage("자유 3D 설계 작업을 열었습니다. 공식 상품 주문은 언제든 상품몰에서 다시 선택할 수 있습니다.");
+  };
   const updateReferenceOrder = (patch: Partial<ReferenceProductOrderDraft>) => {
     setReferenceOrder(previous => {
       if (!previous) return previous;
@@ -417,9 +420,7 @@ export default function Atelier() {
         user={buyer}
       />
       <header className="at-header">
-        <a href="#design">
-          <ArrowLeft size={17} /> 자유 설계로 이동
-        </a>
+        <button className="at-header-free-design" onClick={openFreeDesign} type="button"><ArrowLeft size={17} /> 자유 3D 설계</button>
         <b>
           REAL PRODUCT CUSTOM STUDIO <small>실물 기준 상품에서 승인된 사양만 선택하고, 공장 검토 요청까지 연결합니다.</small>
         </b>
@@ -443,7 +444,7 @@ export default function Atelier() {
                 ×
               </button>
             </div>
-            {!selectedReferenceProduct && <fieldset disabled={busy} className="at-toolbar">
+            {!mallOpen && !selectedReferenceProduct && <fieldset disabled={busy} className="at-toolbar">
               <div>
                 {(Object.keys(productNames) as Project["product"][]).map(
                   product => (
@@ -523,20 +524,20 @@ export default function Atelier() {
                   </span>
                 </button>
               ))}
+              <button className="at-reference-free-design" onClick={openFreeDesign} type="button">자유 3D 설계로 이동</button>
               {selectedReferenceProduct && (
                 <button
                   className="at-reference-return"
                   onClick={() => {
-                    setReferenceProductId(null);
-                    setReferenceOrder(null);
-                    setReceipt("");
+                    setMallOpen(true);
+                    setSidebarOpen(false);
                   }}
                 >
-                  기본 3D 편집기로 돌아가기
+                  공식 상품몰로 돌아가기
                 </button>
               )}
             </section>
-            {!selectedReferenceProduct && <fieldset disabled={busy} className="at-controls">
+            {!mallOpen && !selectedReferenceProduct && <fieldset disabled={busy} className="at-controls">
             <nav>
               {[
                 ["template", "1. 제품 템플릿"],
@@ -1245,6 +1246,7 @@ export default function Atelier() {
                   selectReferenceProduct(product);
                   setMessage(`${product.title}을(를) 선택했습니다. 개인화 방식을 먼저 고른 뒤 내용을 적용해 주세요.`);
                 }}
+                onStartFreeDesign={openFreeDesign}
                 products={activeReferenceProducts}
               />
             ) : selectedReferenceProduct ? (
@@ -1279,7 +1281,7 @@ export default function Atelier() {
                 project={p}
               />
             )}
-            {!selectedReferenceProduct && <div className="at-backups">
+            {!mallOpen && !selectedReferenceProduct && <div className="at-backups">
               <button
                 disabled={busy}
                 onClick={() => {
@@ -1349,7 +1351,7 @@ export default function Atelier() {
                 복사본 만들기
               </button>
             </div>}
-            {!selectedReferenceProduct && <p className="at-help">
+            {!mallOpen && !selectedReferenceProduct && <p className="at-help">
               이 기기 저장은 브라우저 데이터 삭제 시 사라질 수 있습니다. 다른
               기기에서도 쓰려면 클라우드 저장 또는 전체 백업을 이용하세요.
             </p>}

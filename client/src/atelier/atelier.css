@@ -53,6 +53,12 @@
   gap: 7px;
   font-size: 12px;
 }
+.at-header-free-design {
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--at-accent) !important;
+  padding: 0 !important;
+}
 .at-header b {
   letter-spacing: 1px;
 }
@@ -551,6 +557,18 @@
   line-height: 1.65;
   margin: 0;
 }
+.at-product-mall-principles {
+  border-bottom: 1px solid var(--at-line);
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1.5rem;
+  padding: 0 0 1.25rem;
+}
+.at-product-mall-principles > div { align-items: flex-start; display: flex; gap: 0.55rem; }
+.at-product-mall-principles svg { color: var(--at-accent); flex: 0 0 auto; margin-top: 0.1rem; }
+.at-product-mall-principles span { display: grid; gap: 0.13rem; }
+.at-product-mall-principles b { color: var(--at-ink); font-size: 0.76rem; }
+.at-product-mall-principles small { color: var(--at-muted); font-size: 0.71rem; line-height: 1.45; }
 .at-product-mall-grid {
   display: grid;
   gap: 1.25rem;
@@ -610,6 +628,35 @@
   margin-top: 1.5rem;
   padding-top: 1rem;
 }
+.at-product-mall-footer {
+  align-items: center;
+  border-top: 1px solid var(--at-line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+.at-product-mall-footer > div { display: grid; gap: 0.2rem; }
+.at-product-mall-footer span { color: var(--at-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; }
+.at-product-mall-footer p { color: var(--at-muted); font-size: 0.76rem; line-height: 1.5; margin: 0; }
+.at-product-mall-footer button,
+.at-reference-free-design {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--at-line-strong);
+  border-radius: 0.65rem;
+  color: var(--at-ink);
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  gap: 0.35rem;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+}
+.at-reference-free-design { margin-top: 0.6rem; width: 100%; }
 .at-reference-heading {
   align-items: flex-start;
   background: var(--at-card);
