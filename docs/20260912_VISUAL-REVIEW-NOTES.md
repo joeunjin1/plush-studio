@@ -28,6 +28,24 @@ staging Supabase Auth URL 설정에서 Site URL은 Vercel staging alias이고, R
 
 staging Supabase Auth Audit Logs 설정은 별도 `audit_log_entries` DB 기록을 비활성화한 상태이며, 기존의 Auth logs를 볼 수 있는 링크만 제공한다. 디버깅 편의를 위해 추가 감사 로그 저장을 켜면 DB 저장량과 Auth 설정이 바뀌므로, 현재는 변경하지 않았다.
 
+2026-09-14 빌드 산출물의 공개 Supabase URL을 확인한 결과 자동 게시 Manus domain은 Production ref `lzrjjfjpatcwsxhjafpy`를 가리킨다. 따라서 이 domain은 staging Magic Link·상품 등록·logo UAT의 대상이 아니며, browser로 테스트하지 않는다. GitHub `staging`에는 공식 상품몰 체크포인트 `edc394b`를 반영했다. 반면 Vercel staging alias는 현재 Vercel SSO로 보호되어 비로그인 HTTP 요청이 Login 페이지로 redirect되므로, Vercel 세션이 있는 browser에서만 배포·staging Auth를 검증한다.
+
+Vercel 로그인 경로를 통해 staging alias를 다시 열었을 때 page title은 `Plush Studio · 실물 기준 커스텀 굿즈 상품몰`로 확인됐다. 즉 최신 공식 상품몰 커밋은 Vercel staging alias까지 도달했다. 다만 browser artifact collector가 Chrome extension URL에 접근할 수 없어 DOM·스크린샷은 반환하지 못했으며, 실제 관리자 UAT는 사용자의 로그인된 Vercel browser에서 이어서 수행해야 한다.
+
+사용자가 제공한 SENKANG SQL은 데이터·테이블·RLS를 변경하지 않고 `public.buyer_sample_mall_list(text, integer, integer)` 함수와 `authenticated` 실행 권한만 만들거나 교체하는 내용이다. `plush-studio-staging` SQL Editor에서 `pg_proc`를 대상으로 동일 함수명을 조회한 결과는 0 rows였다. Editor는 빈 결과에 `Too small: expected string to have >=1 characters` UI 오류를 함께 표시했으므로, 실제 함수 부재는 별도의 단순 쿼리로 한 번 더 확인한 뒤 삭제 여부를 확정한다.
+
+단순 `select 'staging-read-only-check' as result;`도 동일하게 0 rows와 `Too small: expected string to have >=1 characters`를 반환했다. 따라서 현재 SQL Editor UI 상태에서는 읽기 전용 쿼리 결과 자체가 신뢰되지 않으며, 기존 0 rows만으로 SENKANG 함수가 없다고 단정하지 않는다. 되돌리기는 함수 signature를 한정한 `DROP FUNCTION IF EXISTS`로만 설계하고, 사용자가 명시 승인한 뒤 staging에서 실행한다.
+
+사용자 승인 후 staging SQL Editor에서 `revoke all on function public.buyer_sample_mall_list(text, integer, integer)` 및 `drop function if exists public.buyer_sample_mall_list(text, integer, integer)`가 포함된 트랜잭션을 실행했고 `Success · No rows returned` 결과를 확인했다. 삭제 대상은 SENKANG RPC 1개와 그 execute grant뿐이며, `CASCADE`는 사용하지 않았다. 테이블·행·Storage·RLS·Auth·roles·Production 변경은 없다.
+
+2026-09-14 프로젝트 경계 재점검 결과: 작업 디렉터리는 `/home/ubuntu/plush-studio`, GitHub repository는 `joeunjin1/plush-studio`, 최신 staging commit은 `edc394b7e29ca5db56197d3d81df777d09bad1d4`이며 GitHub `staging` 브랜치도 동일 커밋을 가리킨다. Vercel의 올바른 프로젝트는 `joeunjin1's projects / plush-studio`이고, 기존에 보인 `senkang-buyer-storefront` 화면은 본 작업과 무관하다. 이후 브라우저·배포·DB UAT는 이 세 식별자와 staging Supabase ref `trhhgmionyyfnbwhxenn`만 사용한다.
+
+Vercel `joeunjin1's projects / plush-studio / Deployments`에서 `edc394b` staging Preview가 Ready로 확인됐고 immutable Preview URL은 `https://plush-studio-4ttgycfvh-joeunjin1s-projects.vercel.app`이다. 이 주소의 `#catalog-admin`도 열었으나 browser artifact collector가 Chrome extension URL 제한으로 DOM을 반환하지 못했다. 이후 immutable Preview 검증은 사용자 브라우저 화면 확인 또는 Vercel UI의 Deployment 상태와 페이지 title을 함께 사용한다.
+
+Vercel `plush-studio / Environment Variables`에서 `VITE_SUPABASE_URL`과 `VITE_SUPABASE_ANON_KEY`가 Preview와 Production에 별도로 존재하는 것을 확인했다. Preview URL 항목은 `staging` branch에 적용됨을 표시했고 값은 공개하지 않았다. 이로써 Vercel staging Preview만 staging Supabase 검증 대상이며, auto-published Manus domain과 Production `plush-studio.vercel.app`은 이 UAT에서 제외한다.
+
+stable staging alias `https://plush-studio-git-staging-joeunjin1s-projects.vercel.app/#catalog-admin`는 최신 title `Plush Studio · 실물 기준 커스텀 굿즈 상품몰`을 반환했다. 그러나 해당 브라우저의 artifact collector는 Chrome extension URL 제한으로 관리자 UI DOM을 추출하지 못한다. 이후 이 alias의 Magic Link·brand_admin UI UAT는 사용자가 화면을 직접 열어 확인하거나 별도 정상 browser session에서 수행한다.
+
 공식 실물 상품몰은 현재 기본 buyer 진입으로 전환됐다. 데스크톱과 390px 모바일에서 실물 기준 프리뷰 → SKU별 허용 사양 → 공장 검토 요청의 순서와 자유 3D 설계 보조 경로를 확인했다. 자유 설계 전용 백업 도구는 상품몰 첫 화면에서 숨겨 buyer의 상품 선택 흐름과 섞이지 않도록 했다.
 
 ## 후속 확인 필요

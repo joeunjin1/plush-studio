@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
-import { Boxes, FileUp, HardDrive, LockKeyhole, RefreshCw, ShieldCheck } from "lucide-react";
+import { Boxes, FileUp, HardDrive, LockKeyhole, PackageCheck, RefreshCw, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   buyerMagicLinkErrorMessage,
@@ -348,22 +348,38 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
   return (
     <main className="at-model-admin">
       <header className="at-model-admin-header">
-        <div><span>STAGING · PRIVATE INTAKE</span><h1>상품 마스터 · 3D 원본 등록</h1><p>원본 GLB는 private storage에만 보관하고, 검토·해시 확인·승인 전에는 구매자에게 노출하지 않습니다.</p></div>
-        <button className="at-secondary" disabled={loading} onClick={() => void load()} type="button"><RefreshCw size={16} /> {loading ? "불러오는 중…" : "새로고침"}</button>
+        <div className="at-model-admin-header-copy">
+          <span>STAGING · PRIVATE PRODUCT OPERATIONS</span>
+          <h1>상품 운영 워크스페이스</h1>
+          <p>실물 상품의 증거, 허용 사양, 검토 이력을 한 SKU 기준으로 정리한 뒤 buyer 공개 여부를 결정합니다.</p>
+        </div>
+        <div className="at-model-admin-header-actions">
+          <span><ShieldCheck size={15} /> buyer 비공개 작업</span>
+          <button className="at-secondary" disabled={loading} onClick={() => void load()} type="button"><RefreshCw size={16} /> {loading ? "동기화 중…" : "새로고침"}</button>
+        </div>
       </header>
 
-      <section className="at-model-admin-guard" aria-label="공개 전 검토 기준"><ShieldCheck size={19} /><p><b>공개 게이트:</b> 상품 권리·상품 승인, GLB SHA-256 확인, 5면 비교, 모델 검토, public catalog 승인 복사본이 모두 완료돼야 현재 구매자 3D 모델로 승격할 수 있습니다.</p></section>
+      <section className="at-model-admin-guard" aria-label="공개 전 검토 기준"><ShieldCheck size={19} /><p><b>공개 게이트:</b> 상품 권리, 필수 5면, 허용 개인화 방식, 원본 무결성, 검토 승인이 모두 확인돼야 buyer mall에 공개할 수 있습니다.</p></section>
       {message && <p aria-live="polite" className="at-model-admin-message">{message}</p>}
 
       <section className="at-admin-workflow" aria-label="상품 등록 작업 순서">
-        <div className="at-admin-workflow-heading"><span>REGISTRATION PATH</span><p>가방과 인형 등 모든 공식 상품은 같은 순서로 초안·검토·공개합니다.</p></div>
+        <div className="at-admin-workflow-heading"><span>PRODUCT RELEASE PATH</span><p>새 상품은 초안 → 실물 증거 → 허용 사양 → 공개 검토 순서로 운영합니다.</p></div>
         <ol>
           {workflowSteps.map(step => <li data-state={step.state} key={step.number}><b>{step.number}</b><span><strong>{step.label}</strong><small>{step.detail}</small></span></li>)}
         </ol>
       </section>
 
+      <section className="at-admin-product-context" aria-label="현재 작업 대상">
+        <div className="at-admin-product-context-title"><PackageCheck size={19} /><span><small>WORKING PRODUCT</small><b>{selectedProduct ? `${selectedProduct.sku} · ${selectedProduct.title}` : "아직 선택된 상품이 없습니다"}</b></span></div>
+        <div className="at-admin-product-context-status">
+          <span><small>상품 상태</small><b>{selectedProduct?.review_status ?? "초안 등록 전"}</b></span>
+          <span><small>5면 증거</small><b>{photoPublicationReady ? "검토 가능" : `${selectedPhotoIntakes.length}/5 등록`}</b></span>
+          <span><small>buyer 공개</small><b>{selectedProduct?.visible_to_buyers ? "공개" : "비공개"}</b></span>
+        </div>
+      </section>
+
       <div className="at-model-admin-layout">
-        <section className="at-model-admin-card" aria-label="상품 마스터 초안 등록">
+        <section className="at-model-admin-card at-admin-stage-card at-admin-stage-master" aria-label="상품 마스터 초안 등록">
           <ReferenceProductMasterIntake
             organizationId={organizationId}
             userId={user.id}
@@ -375,7 +391,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
         </section>
 
         {productId && organizationId && (
-          <section className="at-model-admin-card" aria-label="5면 사진 초안 등록">
+          <section className="at-model-admin-card at-admin-stage-card at-admin-stage-evidence" aria-label="5면 사진 초안 등록">
             <ReferenceProductPhotoIntake
             organizationId={organizationId}
             onRegistered={load}
@@ -385,7 +401,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
           </section>
         )}
 
-        <section className="at-model-admin-card" aria-labelledby="photo-review-title">
+        <section className="at-model-admin-card at-admin-stage-card at-admin-stage-review" aria-labelledby="photo-review-title">
           <div className="at-model-admin-card-heading"><ShieldCheck size={20} /><div><span>03 · PHOTO REVIEW</span><h2 id="photo-review-title">5면 사진 검토 · buyer 공개</h2></div></div>
           {productId ? (
             <>
@@ -402,11 +418,11 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
           ) : <div className="at-model-admin-empty"><HardDrive size={22} /><p>대상 상품 SKU를 선택하세요.</p><span>상품 초안과 필수 5면을 먼저 등록한 뒤 검토 큐가 활성화됩니다.</span></div>}
         </section>
 
-        {productId && organizationId && selectedProduct && <section className="at-model-admin-card" aria-label="상품별 개인화 방식 연결"><ReferenceProductPersonalizationBinding organizationId={organizationId} productFamily={selectedProduct.product_family} productId={productId} /></section>}
+        {productId && organizationId && selectedProduct && <section className="at-model-admin-card at-admin-stage-card at-admin-stage-spec" aria-label="상품별 개인화 방식 연결"><ReferenceProductPersonalizationBinding organizationId={organizationId} productFamily={selectedProduct.product_family} productId={productId} /></section>}
 
-        {productId && selectedProduct && <section className="at-model-admin-card" aria-label="상품별 본체 및 손잡이 색상 옵션"><ReferenceProductColorOptions onSaved={load} productId={productId} supabase={supabase} /></section>}
+        {productId && selectedProduct && <section className="at-model-admin-card at-admin-stage-card at-admin-stage-spec" aria-label="상품별 본체 및 손잡이 색상 옵션"><ReferenceProductColorOptions onSaved={load} productId={productId} supabase={supabase} /></section>}
 
-        <section className="at-model-admin-card" aria-labelledby="model-draft-title">
+        <section className="at-model-admin-card at-admin-stage-card at-admin-stage-model" aria-labelledby="model-draft-title">
           <div className="at-model-admin-card-heading"><FileUp size={20} /><div><span>03 · 3D DRAFT</span><h2 id="model-draft-title">대표 제공 GLB 초안 등록</h2></div></div>
           <div className="at-model-admin-fields">
             <label><span>소유 조직</span><select disabled={uploading || organizations.length === 0} onChange={event => setOrganizationId(event.target.value)} value={organizationId}><option value="">조직을 선택하세요</option>{organizations.map(org => <option key={org.id} value={org.id}>{org.name} · {org.slug}</option>)}</select></label>
@@ -419,7 +435,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
           <small className="at-model-admin-footnote">허용 형식은 GLB 2.0이며, 최대 200MB입니다. 이 단계에서는 public catalog 업로드·구매자 공개·기존 버전 대체를 수행하지 않습니다.</small>
         </section>
 
-        <section className="at-model-admin-card" aria-labelledby="model-queue-title">
+        <section className="at-model-admin-card at-admin-stage-card at-admin-stage-queue" aria-labelledby="model-queue-title">
           <div className="at-model-admin-card-heading"><Boxes size={20} /><div><span>04 · REVIEW QUEUE</span><h2 id="model-queue-title">선택 SKU의 3D 버전</h2></div></div>
           {productId ? productModels.length > 0 ? <div className="at-model-admin-table" role="region" aria-label="GLB 검토 대기 목록" tabIndex={0}><table><thead><tr><th>버전</th><th>원본</th><th>검토</th><th>무결성</th><th>공개</th></tr></thead><tbody>{productModels.map(model => <tr key={model.id}><td><b>{model.model_version}</b><small>{new Date(model.uploaded_at).toLocaleDateString("ko-KR")}</small></td><td>{bytesLabel(model.byte_size)}<small>{model.triangle_count === null ? "구조 미등록" : `${numberLabel(model.triangle_count)} triangles`}</small></td><td><span className="at-model-admin-status">{model.review_state}</span></td><td><span className="at-model-admin-status">{model.checksum_verification_state}</span></td><td>{model.is_current && model.visible_to_buyers ? "현재 공개" : "비공개"}</td></tr>)}</tbody></table></div> : <div className="at-model-admin-empty"><HardDrive size={22} /><p>아직 등록된 GLB 메타데이터가 없습니다.</p><span>첫 원본을 초안으로 올린 뒤 검토 큐에서 확인하세요.</span></div> : <div className="at-model-admin-empty"><HardDrive size={22} /><p>대상 상품 SKU를 선택하세요.</p></div>}
         </section>
