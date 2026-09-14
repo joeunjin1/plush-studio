@@ -63,6 +63,18 @@
 .at-admin-release-panel li[data-state="complete"] { border-color: var(--at-accent); }
 .at-admin-release-panel li[data-state="complete"] > b { background: var(--at-accent); color: var(--at-card); }
 .at-admin-release-panel li[data-state="current"] { box-shadow: inset 0 0 0 1px var(--at-accent); }
+.at-operator-start-card { background: var(--at-card); border: 1px solid var(--at-line); border-radius: 1rem; display: grid; gap: 0.8rem; margin: 0 auto; max-width: 82rem; overflow: hidden; }
+.at-operator-start-primary { background: var(--at-ink); color: var(--at-card); display: grid; gap: 0.55rem; padding: 1.35rem; }
+.at-operator-start-primary > span { color: color-mix(in srgb, var(--at-card) 62%, transparent); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; }
+.at-operator-start-primary h2 { font-size: 1.35rem; margin: 0; }
+.at-operator-start-primary p { color: color-mix(in srgb, var(--at-card) 74%, transparent); font-size: 0.82rem; line-height: 1.55; margin: 0; max-width: 32rem; }
+.at-operator-start-primary button { justify-self: start; margin-top: 0.25rem; min-height: 2.8rem; }
+.at-operator-prep-list { display: grid; gap: 0.55rem; padding: 1rem; }
+.at-operator-prep-list > div { align-items: center; background: var(--at-soft); border: 1px solid var(--at-line); border-radius: 0.7rem; display: flex; gap: 0.65rem; padding: 0.7rem; }
+.at-operator-prep-list svg { color: var(--at-accent); flex: 0 0 auto; }
+.at-operator-prep-list span { display: grid; gap: 0.14rem; }
+.at-operator-prep-list b { color: var(--at-ink); font-size: 0.76rem; }
+.at-operator-prep-list small { color: var(--at-muted); font-size: 0.68rem; line-height: 1.45; }
 .at-model-admin-layout { align-items: start; display: grid; gap: 0.9rem; margin: 0 auto; max-width: 82rem; }
 .at-model-admin-card { min-width: 0; padding: 1rem; }
 .at-admin-stage-card { box-shadow: 0 0.55rem 1.4rem color-mix(in srgb, var(--at-ink) 6%, transparent); }
@@ -178,6 +190,8 @@
   .at-admin-current-sku { grid-template-columns: minmax(11rem, 1fr) minmax(0, 1.45fr); }
   .at-admin-current-sku-heading { grid-row: 1 / span 1; }
   .at-admin-current-sku-selectors { grid-column: 1 / -1; grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr); }
+  .at-operator-start-card { grid-template-columns: minmax(0, 1.15fr) minmax(22rem, 0.85fr); }
+  .at-operator-prep-list { padding: 1.1rem; }
   .at-model-admin-layout { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); }
   .at-model-admin-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .at-model-admin-analysis { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
