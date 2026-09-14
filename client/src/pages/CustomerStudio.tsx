@@ -186,7 +186,7 @@ export default function CustomerStudio() {
               ? "workspace"
               : window.location.hash === "#requests"
                 ? "requests"
-                : "design"
+                : "atelier"
       );
     onHash();
     window.addEventListener("hashchange", onHash);

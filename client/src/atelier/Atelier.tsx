@@ -100,10 +100,10 @@ export default function Atelier() {
     [receipt, setReceipt] = useState(""),
     [protectedArtifact, setProtectedArtifact] = useState<ProtectedArtifact | null>(null),
     [sidebarOpen, setSidebarOpen] = useState(false),
-    [referenceProductId, setReferenceProductId] = useState<string | null>(initialReferenceProductIdFromUrl),
+    [referenceProductId, setReferenceProductId] = useState<string | null>(() => referenceProductById(initialReferenceProductIdFromUrl())?.id ?? referenceProducts[0]?.id ?? null),
     [mallOpen, setMallOpen] = useState(() => new URLSearchParams(window.location.search).get("mall") === "1"),
     [referenceOrder, setReferenceOrder] = useState<ReferenceProductOrderDraft | null>(() => {
-      const product = referenceProductById(initialReferenceProductIdFromUrl());
+      const product = referenceProductById(initialReferenceProductIdFromUrl()) ?? referenceProducts[0];
       return product
         ? restoreReferenceProductOrderDraft(product.id) ?? createReferenceProductOrderDraft(newRequestId(), product)
         : null;
@@ -123,6 +123,7 @@ export default function Atelier() {
       ? null
       : referenceProductById(referenceProductId));
   const selectedReferenceOrder = referenceOrder?.productId === selectedReferenceProduct?.id ? referenceOrder : null;
+  const defaultReferenceResolved = useRef(false);
   const selectReferenceProduct = (product: NonNullable<typeof selectedReferenceProduct>) => {
     setReferenceProductId(product.id);
     setMallOpen(false);
@@ -132,6 +133,13 @@ export default function Atelier() {
       restoreReferenceProductOrderDraft(product.id) ?? createReferenceProductOrderDraft(requestId.current, product)
     );
   };
+  useEffect(() => {
+    if (defaultReferenceResolved.current || !approvedReferenceProductsReady || approvedReferenceProducts.length === 0 || approvedReferenceProducts.some(product => product.id === referenceProductId)) return;
+    const firstApprovedProduct = approvedReferenceProducts[0];
+    defaultReferenceResolved.current = true;
+    setReferenceProductId(firstApprovedProduct.id);
+    setReferenceOrder(restoreReferenceProductOrderDraft(firstApprovedProduct.id) ?? createReferenceProductOrderDraft(newRequestId(), firstApprovedProduct));
+  }, [approvedReferenceProducts, approvedReferenceProductsReady, referenceProductId]);
   const updateReferenceOrder = (patch: Partial<ReferenceProductOrderDraft>) => {
     setReferenceOrder(previous => {
       if (!previous) return previous;
@@ -410,10 +418,10 @@ export default function Atelier() {
       />
       <header className="at-header">
         <a href="#design">
-          <ArrowLeft size={17} /> 제품 만들기
+          <ArrowLeft size={17} /> 자유 설계로 이동
         </a>
         <b>
-          PRODUCT ATELIER <small>구조와 디자인을 함께 완성하는 3D 제품 만들기</small>
+          REAL PRODUCT CUSTOM STUDIO <small>실물 기준 상품에서 승인된 사양만 선택하고, 공장 검토 요청까지 연결합니다.</small>
         </b>
         <a href="#requests">내 제작 요청</a>
       </header>
@@ -488,14 +496,14 @@ export default function Atelier() {
             </fieldset>}
             <section className="at-reference-library" aria-label="공식 기준 상품 라이브러리">
               <div className="at-reference-library-heading">
-                <span>REFERENCE PRODUCT LIBRARY</span>
-                <p>실사 5면 기준 상품</p>
+                <span>OFFICIAL PRODUCT CATALOG</span>
+                <p>실사 5면 · 공정 검토 기준 상품</p>
               </div>
               <button className="at-open-mall" onClick={() => {
                 setMallOpen(true);
                 setSidebarOpen(false);
               }}>
-                상품몰 열기
+                공식 상품 선택
               </button>
               {activeReferenceProducts.map(product => (
                 <button

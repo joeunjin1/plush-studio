@@ -18,6 +18,7 @@ import {
 import { ReferenceProductMasterIntake } from "./ReferenceProductMasterIntake";
 import { ReferenceProductPhotoIntake } from "./ReferenceProductPhotoIntake";
 import { ReferenceProductPersonalizationBinding } from "./ReferenceProductPersonalizationBinding";
+import { ReferenceProductColorOptions } from "./ReferenceProductColorOptions";
 import {
   fiveRequiredPhotoIntakes,
   publishReferenceProductPhotoCopies,
@@ -402,6 +403,8 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
         </section>
 
         {productId && organizationId && selectedProduct && <section className="at-model-admin-card" aria-label="상품별 개인화 방식 연결"><ReferenceProductPersonalizationBinding organizationId={organizationId} productFamily={selectedProduct.product_family} productId={productId} /></section>}
+
+        {productId && selectedProduct && <section className="at-model-admin-card" aria-label="상품별 본체 및 손잡이 색상 옵션"><ReferenceProductColorOptions onSaved={load} productId={productId} supabase={supabase} /></section>}
 
         <section className="at-model-admin-card" aria-labelledby="model-draft-title">
           <div className="at-model-admin-card-heading"><FileUp size={20} /><div><span>03 · 3D DRAFT</span><h2 id="model-draft-title">대표 제공 GLB 초안 등록</h2></div></div>

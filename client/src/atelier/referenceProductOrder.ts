@@ -23,6 +23,12 @@ export const referenceProductOrderDraftSchema = z.object({
     })
     .nullable(),
   placementLabel: z.string().max(160),
+  productOptionSelections: z.array(z.object({
+    optionKey: z.string().regex(/^[a-z][a-z0-9_]{2,60}$/),
+    valueId: z.string().min(1).max(80),
+    label: z.string().min(1).max(120),
+    hex: z.string().regex(/^#[0-9a-f]{6}$/i),
+  })).max(12),
   companyName: z.string().max(160),
   contactName: z.string().max(80),
   contactPhone: z
@@ -59,6 +65,7 @@ export function createReferenceProductOrderDraft(
     personalizationText: "",
     personalizationArtwork: null,
     placementLabel: product.memorialTag.enabled ? product.memorialTag.sides.front.label : "적용 위치 확인 필요",
+    productOptionSelections: [],
     companyName: "",
     contactName: "",
     contactPhone: "",
@@ -120,6 +127,7 @@ export function referenceProductOrderSnapshot(
     personalizationLabel: profile.label,
     safeArea: profile.constraints.safeAreaLabel,
     placementLabel: draft.placementLabel,
+    productOptionSelections: draft.productOptionSelections,
   };
 }
 
@@ -154,7 +162,8 @@ export async function submitReferenceProductOrder(
   }
 
   const snapshot = referenceProductOrderSnapshot(product, profile, valid);
-  const { data, error } = await supabase.rpc("submit_reference_product_order", {
+  const rpcName = valid.productOptionSelections.length ? "submit_reference_product_order_with_options" : "submit_reference_product_order";
+  const { data, error } = await supabase.rpc(rpcName, {
     p_id: valid.id,
     p_company_name: valid.companyName,
     p_contact_name: valid.contactName,
@@ -178,6 +187,9 @@ export async function submitReferenceProductOrder(
     p_desired_delivery_date: valid.desiredDeliveryDate || null,
     p_purpose: valid.purpose,
     p_order_note: valid.orderNote,
+    ...(valid.productOptionSelections.length ? {
+      p_product_option_selections: valid.productOptionSelections.map(({ optionKey, valueId }) => ({ option_key: optionKey, value_id: valueId })),
+    } : {}),
   });
   if (error) {
     if (error.message.includes("AUTH_REQUIRED")) throw Error("이메일 로그인 후 요청을 보낼 수 있습니다.");

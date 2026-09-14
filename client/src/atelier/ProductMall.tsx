@@ -11,8 +11,8 @@ export function ProductMall({ products, onSelect }: Props) {
     <section className="at-product-mall" aria-label="상품몰">
       <header className="at-product-mall-heading">
         <span>OFFICIAL PRODUCT MALL</span>
-        <h2>실사 5면 기준 상품을 고르세요</h2>
-        <p>선택한 상품에 등록된 개인화 방식과 안전 영역만 다음 단계에서 안내합니다.</p>
+        <h2>실물 기준 상품에서 제작 사양을 고르세요</h2>
+        <p>관리자가 승인한 컬러·개인화 방식·안전 영역만 선택할 수 있으며, 최종 생산 가능 여부는 공장 검토로 확정됩니다.</p>
       </header>
       <div className="at-product-mall-grid">
         {products.map(product => (
@@ -26,10 +26,10 @@ export function ProductMall({ products, onSelect }: Props) {
             </div>
             <div className="at-product-mall-meta">
               <span><Rotate3D size={15} /> 5면 프리뷰</span>
-              <span><PackageCheck size={15} /> {product.personalizationProfileIds.length}개 개인화 방식</span>
+              <span><PackageCheck size={15} /> {product.customizationOptions?.length ?? 0}개 SKU 옵션 · {product.personalizationProfileIds.length}개 개인화 방식</span>
             </div>
             <button className="at-primary" onClick={() => onSelect(product)}>
-              이 상품 개인화하기 <ArrowRight size={16} />
+              사양 선택 · 제작 요청 <ArrowRight size={16} />
             </button>
           </article>
         ))}

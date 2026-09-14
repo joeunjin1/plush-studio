@@ -117,12 +117,19 @@
 - [x] Restore `#catalog-admin` after a successful staging administrator Magic Link callback without changing existing Supabase authentication configuration, user permissions, or Production routing.
 - [x] Correct the staging-only Supabase Auth redirect configuration that falls back to an obsolete immutable Preview, then re-run the administrator Magic Link UAT on the current staging alias.
 - [x] Re-run the staging administrator Magic Link UAT after the current basic-SMTP email quota resets; custom SMTP and rate-limit changes are intentionally deferred pending separate approval and credentials.
-- [ ] Verify the authenticated staging administrator account's organization membership and, only after approval, grant the minimum brand_admin role required for private GLB intake UAT.
-- [ ] Bootstrap exactly one staging-only plush-studio organization and minimum brand_admin membership after the verified empty-organization preflight, then resume private catalog administrator UAT.
+- [x] Verify the authenticated staging administrator account's organization membership and, after approval, grant the minimum brand_admin role required for private GLB intake UAT.
+- [x] Bootstrap exactly one staging-only plush-studio organization and minimum brand_admin membership after the verified empty-organization preflight, then resume private catalog administrator UAT.
 - [ ] Register one real bag product through the staging product-master, five-view intake, personalization binding, review, and buyer-publication workflow after minimum brand_admin bootstrap is verified.
 - [ ] Run one authenticated buyer logo-upload order for an approved bag SKU, verifying private logo storage, safe placement preview, metadata-only request persistence, buyer history, and no public source-path exposure.
 - [x] Add a generic non-memorial personalization flow so DB-backed bags with approved image/text profiles can show a safe-area reference preview and carry buyer logos into the protected order workflow.
 - [ ] Seed only the approved staging bag personalization profiles required for the real logo UAT, then bind at least one eligible profile before buyer publication.
+- [ ] Define the provided nonwoven insulated bag as an unprinted base SKU with separately configurable body color and woven-handle color, retaining the supplied multi-view photos as structural review references.
+- [ ] Implement an accessible buyer-facing nonwoven insulated bag color simulator that separates body and handle selection from logo personalization and labels all virtual colors as factory-review references.
+- [ ] Complete staging UAT for the actual nonwoven insulated bag: master registration, five-view intake, body/handle color selection, logo upload, protected request, and metadata-only verification.
+- [ ] Add product-scoped customization-option rules so brand_admins choose the allowed method, placement, color choice, file/text constraints, factory-review note, display order, and active state for each SKU.
+- [ ] Render only product-approved customization options in the buyer flow, preserving option selections as metadata in the protected request without exposing draft or disabled administrator options.
+- [ ] Define and apply a unified B2B custom-goods ordering narrative across buyer and administrator surfaces: real product evidence, guided specification, factory review boundary, and protected production-request conversion.
+- [ ] Redesign buyer and administrator primary screens around the same visual system, with concise decision hierarchy, role-specific actions, visible review state, and mobile-first interaction quality.
 - [ ] Audit and improve buyer and administrator task flows for minimal steps, clear progress/error/re-entry states, mobile touch targets, and role-appropriate information before Production promotion.
 - [x] Add a staged administrator registration path that makes product master, mandatory five-view photos, personalization binding, and buyer publication status explicit without weakening review gates.
 - [x] Provide a staging-only minimal SQL file that grants `gjtrade@naver.com` brand_admin membership for the existing plush-studio organization without creating accounts or modifying Production.
@@ -138,3 +145,8 @@
 - [ ] Connect the buyer mall to database-backed approved reference products, retaining the current source catalog only as a staging fallback until the first DB-backed product passes end-to-end UAT.
 - [ ] Add brand_admin product-to-personalization-profile binding so each DB-backed buyer-visible SKU has at least one reusable, eligible personalization method.
 - [x] Provide a single-result, read-only staging brand_admin preflight query so the Supabase SQL Editor visibly returns the real organization and current membership status before any permission UAT.
+- [x] Draft the staging-only migration 018 contract for per-SKU body/handle color options, validated option metadata, and an options-aware official-product request RPC; manual SQL application and live UAT remain pending.
+- [x] Add a brand_admin SKU color-rule panel and buyer-only rendering for active DB-backed body/handle palette values, including draft persistence, selection metadata, and factory-review-reference language.
+- [x] Set the primary buyer entry and official-product catalog copy around the B2B flow of real product evidence → approved specification → protected factory-review request, and document the staging-only operational boundary.
+- [x] Draft and statically validate a non-destructive staging-only follow-up migration that defaults and protects SKU option `created_by` without touching existing orders or assets.
+- [ ] Apply migration 019 in staging and verify a logged-in brand_admin can save and re-save SKU color rules before bag registration.

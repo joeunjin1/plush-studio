@@ -22,7 +22,7 @@ type Props = {
   onPersonalizationConfirm: (
     selection: Pick<
       ReferenceProductOrderDraft,
-      "personalizationProfileId" | "personalizationText" | "personalizationArtwork" | "placementLabel"
+      "personalizationProfileId" | "personalizationText" | "personalizationArtwork" | "placementLabel" | "productOptionSelections"
     >
   ) => void;
 };
@@ -39,8 +39,15 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
   const [previewMode, setPreviewMode] = useState<"photo" | "model">("photo");
   const [previousView, setPreviousView] = useState<ReferenceViewId | null>(null);
   const [failedImages, setFailedImages] = useState<string[]>([]);
+  const [productOptionValueIds, setProductOptionValueIds] = useState<Record<string, string>>({});
   const profiles = profilesForReferenceProduct(product.family, product.personalizationProfileIds);
+  const productOptions = product.customizationOptions ?? [];
   const selectedProfile = profiles.find(profile => profile.id === selectedProfileId) ?? null;
+  const selectedProductOptions = productOptions.flatMap(option => {
+    const value = option.values.find(item => item.id === productOptionValueIds[option.optionKey]);
+    return value ? [{ optionKey: option.optionKey, valueId: value.id, label: `${option.label}: ${value.label}`, hex: value.hex }] : [];
+  });
+  const requiredProductOptionsSatisfied = productOptions.filter(option => option.required).every(option => Boolean(productOptionValueIds[option.optionKey]));
   const hasPersonalizationContent = Boolean(
     selectedProfile && (
       selectedProfile.inputMode === "text"
@@ -57,6 +64,10 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
       preload.src = image;
     });
   }, [product]);
+
+  useEffect(() => {
+    setProductOptionValueIds(Object.fromEntries(productOptions.map(option => [option.optionKey, option.values[0]?.id ?? ""])));
+  }, [product.id]);
 
   useEffect(() => {
     if (!rotating) return;
@@ -290,13 +301,14 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
                   <button onClick={() => setPersonalizationStep("content")}>내용 수정</button>
                   <button
                     className="at-primary"
-                    onClick={() => {
-                      onPersonalizationConfirm({
-                        personalizationProfileId: selectedProfile.id,
-                        personalizationText: tagMessage,
-                        personalizationArtwork: tagArtwork,
-                        placementLabel: product.memorialTag.sides[tagSide].label,
-                      });
+                      onClick={() => {
+                        onPersonalizationConfirm({
+                          personalizationProfileId: selectedProfile.id,
+                          personalizationText: tagMessage,
+                          personalizationArtwork: tagArtwork,
+                          placementLabel: product.memorialTag.sides[tagSide].label,
+                          productOptionSelections: selectedProductOptions,
+                        });
                       onMessage(`${selectedProfile.label} 프리뷰를 주문 요약에 반영했습니다. 수량과 희망 납기를 확인해 주세요.`);
                     }}
                   >
@@ -322,6 +334,33 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
         <section className="at-generic-personalization" aria-label="상품 로고 및 문구 개인화 설정">
           <div className="at-memorial-copy">
             <span>PRODUCT PERSONALIZATION</span>
+            {productOptions.length > 0 && (
+              <section className="at-product-option-picker" aria-label="상품 구성 옵션">
+                <div className="at-product-option-heading"><b>01 · 상품 구성</b><small>관리자가 이 상품에 승인한 색상만 선택할 수 있습니다.</small></div>
+                {productOptions.map(option => (
+                  <fieldset key={option.optionKey}>
+                    <legend>{option.label} {option.required && <em>필수</em>}</legend>
+                    {option.description && <p>{option.description}</p>}
+                    <div className="at-product-option-values">
+                      {option.values.map(value => (
+                        <button
+                          aria-pressed={productOptionValueIds[option.optionKey] === value.id}
+                          key={value.id}
+                          onClick={() => setProductOptionValueIds(current => ({ ...current, [option.optionKey]: value.id }))}
+                          type="button"
+                        >
+                          {/* Dynamic swatches use only administrator-approved color metadata. */}
+                          <i style={{ backgroundColor: value.hex }} />
+                          <span>{value.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <small>{option.placementLabel || "색상 참고 시뮬레이션"} · {option.factoryReviewNote || "실제 원단과 웨빙 컬러는 공장 검토 후 확정됩니다."}</small>
+                  </fieldset>
+                ))}
+                <p className="at-factory-review-note"><b>색상 참고 안내</b> · 화면 색상은 모니터 환경에 따라 달라질 수 있으며, 실제 원단·웨빙 스와치 확인 후 최종 확정됩니다.</p>
+              </section>
+            )}
             {personalizationStep === "method" && (
               <>
                 <h3>상품에 적용할 방식은 무엇인가요?</h3>
@@ -349,6 +388,7 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
                 <h3>{selectedProfile.inputMode === "image" ? "브랜드 로고를 올려 주세요" : "문구 또는 브랜드 로고를 입력해 주세요"}</h3>
                 <p><b>{selectedProfile.label}</b> · {selectedProfile.constraints.safeAreaLabel}</p>
                 <p className="at-factory-review-note"><b>공장 검토 기준</b> · {selectedProfile.factoryReviewNote}</p>
+                {!requiredProductOptionsSatisfied && <p className="at-personalization-error" role="alert">필수 상품 구성 옵션을 먼저 선택해 주세요.</p>}
                 {selectedProfile.inputMode !== "image" && (
                   <label className="at-memorial-input">
                     <span>적용 문구 {selectedProfile.constraints.maxCharacters ? `· 최대 ${selectedProfile.constraints.maxCharacters}자` : ""}</span>
@@ -398,7 +438,7 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
                 {inputError && <p className="at-personalization-error" role="alert">{inputError}</p>}
                 <div className="at-personalization-actions">
                   <button onClick={() => setPersonalizationStep("method")}>방식 다시 고르기</button>
-                  <button className="at-primary" disabled={!hasPersonalizationContent} onClick={() => setPersonalizationStep("review")}>정면 프리뷰 확인</button>
+                  <button className="at-primary" disabled={!hasPersonalizationContent || !requiredProductOptionsSatisfied} onClick={() => setPersonalizationStep("review")}>정면 프리뷰 확인</button>
                 </div>
               </div>
             )}
@@ -411,13 +451,14 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
                   <button onClick={() => setPersonalizationStep("content")}>내용 수정</button>
                   <button
                     className="at-primary"
-                    onClick={() => {
-                      onPersonalizationConfirm({
-                        personalizationProfileId: selectedProfile.id,
-                        personalizationText: tagMessage,
-                        personalizationArtwork: tagArtwork,
-                        placementLabel: selectedProfile.constraints.safeAreaLabel,
-                      });
+                      onClick={() => {
+                        onPersonalizationConfirm({
+                          personalizationProfileId: selectedProfile.id,
+                          personalizationText: tagMessage,
+                          personalizationArtwork: tagArtwork,
+                          placementLabel: selectedProfile.constraints.safeAreaLabel,
+                          productOptionSelections: selectedProductOptions,
+                        });
                       onMessage(`${selectedProfile.label} 참고 프리뷰를 주문 요약에 반영했습니다. 수량과 희망 납기를 확인해 주세요.`);
                     }}
                   >
@@ -432,6 +473,7 @@ export function FiveAngleReferencePreview({ product, onMessage, onPersonalizatio
             <div className="at-generic-personalization-artwork">
               {tagArtwork ? <img alt="첨부한 브랜드 로고 참고 프리뷰" src={tagArtwork.dataUrl} /> : <p>{tagMessage.trim() || "LOGO · TEXT"}</p>}
             </div>
+            {selectedProductOptions.length > 0 && <div className="at-generic-product-colors" aria-label="선택한 색상 구성">{selectedProductOptions.map(option => <span key={option.optionKey}>{/* Dynamic swatches use only administrator-approved color metadata. */}<i style={{ backgroundColor: option.hex }} />{option.label}</span>)}</div>}
             <small>{selectedProfile?.constraints.safeAreaLabel ?? "개인화 방식을 선택해 주세요"}</small>
           </div>
         </section>

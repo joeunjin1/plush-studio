@@ -8,7 +8,7 @@ describe("buyer product mall", () => {
   it("shows registered five-view product metadata before personalization", () => {
     expect(mallSource).toContain("OFFICIAL PRODUCT MALL");
     expect(mallSource).toContain("5면 프리뷰");
-    expect(mallSource).toContain("이 상품 개인화하기");
+    expect(mallSource).toContain("사양 선택 · 제작 요청");
   });
 
   it("opens the mall by URL and moves the selected item into the personalization stage", () => {

@@ -41,4 +41,11 @@ describe("five-angle reference preview", () => {
     expect(source).toContain('selectedProfile.inputMode === "text"');
     expect(source).toContain('selectedProfile.inputMode === "image"');
   });
+
+  it("renders only administrator-approved product color options and carries them into protected order metadata", () => {
+    expect(source).toContain("관리자가 이 상품에 승인한 색상만 선택할 수 있습니다.");
+    expect(source).toContain("productOptionSelections: selectedProductOptions");
+    expect(source).toContain("필수 상품 구성 옵션을 먼저 선택해 주세요.");
+    expect(source).toContain("실제 원단·웨빙 스와치 확인 후 최종 확정됩니다.");
+  });
 });

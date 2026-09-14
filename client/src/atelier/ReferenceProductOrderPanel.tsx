@@ -102,6 +102,7 @@ export function ReferenceProductOrderPanel({
           ) : (
             <p className="at-reference-order-warning">상품 프리뷰의 개인화 방식과 내용을 먼저 선택해 주세요.</p>
           )}
+          {draft.productOptionSelections.length > 0 && <div className="at-reference-order-review-copy"><b>선택한 상품 옵션</b><p>{draft.productOptionSelections.map(selection => selection.label).join(" · ")}</p><small>색상은 화면 참고용이며, 공장 원단·웨빙 확인 후 확정됩니다.</small></div>}
         </div>
       )}
 
@@ -203,6 +204,7 @@ export function ReferenceProductOrderPanel({
           <div className="at-reference-order-final-grid">
             <div><span>상품</span><b>{product.title}</b><small>{product.sku} · 기준 v01</small></div>
             <div><span>개인화</span><b>{profile?.label}</b><small>{draft.placementLabel}</small></div>
+            {draft.productOptionSelections.length > 0 && <div><span>상품 구성</span><b>{draft.productOptionSelections.map(selection => selection.label).join(" · ")}</b><small>공장 검토 후 확정</small></div>}
             <div><span>수량 · 납기</span><b>{draft.quantity.toLocaleString()}개</b><small>{draft.desiredDeliveryDate || "희망 납기 미입력"}</small></div>
             <div><span>연락</span><b>{draft.companyName}</b><small>{draft.contactName} · {authenticatedEmail || "이메일 인증 필요"}</small></div>
           </div>

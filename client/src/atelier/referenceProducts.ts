@@ -1,6 +1,16 @@
 export const referenceViewIds = ["front", "left", "rear", "right", "top"] as const;
 export type ReferenceViewId = (typeof referenceViewIds)[number];
 export type MemorialTagSide = "front" | "back";
+export type ProductCustomizationOption = {
+  optionKey: string;
+  label: string;
+  description: string;
+  placementLabel: string;
+  required: boolean;
+  displayOrder: number;
+  factoryReviewNote: string;
+  values: Array<{ id: string; label: string; hex: string }>;
+};
 
 const catalogBucket = "plush-studio-catalog";
 
@@ -39,6 +49,7 @@ export type ReferenceProduct = {
   };
   physicalDimensions?: { widthCm: number; heightCm: number; depthCm: number };
   carton?: { widthCm: number; heightCm: number; depthCm: number };
+  customizationOptions?: ProductCustomizationOption[];
 };
 
 export const referenceProducts: ReferenceProduct[] = [
