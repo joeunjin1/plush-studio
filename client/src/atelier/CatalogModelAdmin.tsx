@@ -347,35 +347,24 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
 
   return (
     <main className="at-model-admin">
-      <header className="at-model-admin-header">
-        <div className="at-model-admin-header-copy">
-          <span>STAGING · PRIVATE PRODUCT OPERATIONS</span>
-          <h1>상품 운영 워크스페이스</h1>
-          <p>실물 상품의 증거, 허용 사양, 검토 이력을 한 SKU 기준으로 정리한 뒤 buyer 공개 여부를 결정합니다.</p>
-        </div>
-        <div className="at-model-admin-header-actions">
-          <span><ShieldCheck size={15} /> buyer 비공개 작업</span>
-          <button className="at-secondary" disabled={loading} onClick={() => void load()} type="button"><RefreshCw size={16} /> {loading ? "동기화 중…" : "새로고침"}</button>
-        </div>
+      <header className="at-admin-commandbar">
+        <div><span>CATALOG ADMIN · STAGING</span><h1>상품 운영</h1></div>
+        <div className="at-admin-commandbar-actions"><span><ShieldCheck size={15} /> buyer 비공개</span><button className="at-secondary" disabled={loading} onClick={() => void load()} type="button"><RefreshCw size={16} /> {loading ? "동기화 중…" : "새로고침"}</button></div>
       </header>
-
-      <section className="at-model-admin-guard" aria-label="공개 전 검토 기준"><ShieldCheck size={19} /><p><b>공개 게이트:</b> 상품 권리, 필수 5면, 허용 개인화 방식, 원본 무결성, 검토 승인이 모두 확인돼야 buyer mall에 공개할 수 있습니다.</p></section>
       {message && <p aria-live="polite" className="at-model-admin-message">{message}</p>}
 
-      <section className="at-admin-workflow" aria-label="상품 등록 작업 순서">
-        <div className="at-admin-workflow-heading"><span>PRODUCT RELEASE PATH</span><p>새 상품은 초안 → 실물 증거 → 허용 사양 → 공개 검토 순서로 운영합니다.</p></div>
-        <ol>
-          {workflowSteps.map(step => <li data-state={step.state} key={step.number}><b>{step.number}</b><span><strong>{step.label}</strong><small>{step.detail}</small></span></li>)}
-        </ol>
-      </section>
-
-      <section className="at-admin-product-context" aria-label="현재 작업 대상">
-        <div className="at-admin-product-context-title"><PackageCheck size={19} /><span><small>WORKING PRODUCT</small><b>{selectedProduct ? `${selectedProduct.sku} · ${selectedProduct.title}` : "아직 선택된 상품이 없습니다"}</b></span></div>
-        <div className="at-admin-product-context-status">
-          <span><small>상품 상태</small><b>{selectedProduct?.review_status ?? "초안 등록 전"}</b></span>
-          <span><small>5면 증거</small><b>{photoPublicationReady ? "검토 가능" : `${selectedPhotoIntakes.length}/5 등록`}</b></span>
-          <span><small>buyer 공개</small><b>{selectedProduct?.visible_to_buyers ? "공개" : "비공개"}</b></span>
+      <section className="at-admin-operations-board" aria-label="SKU 운영 보드">
+        <div className="at-admin-current-sku">
+          <div className="at-admin-current-sku-heading"><PackageCheck size={20} /><span><small>WORKING SKU</small><b>{selectedProduct ? `${selectedProduct.sku} · ${selectedProduct.title}` : "새 상품을 등록하거나 기존 SKU를 선택하세요"}</b></span></div>
+          <div className="at-admin-current-sku-selectors">
+            <label><span>소유 조직</span><select disabled={loading || organizations.length === 0} onChange={event => setOrganizationId(event.target.value)} value={organizationId}><option value="">조직 선택</option>{organizations.map(org => <option key={org.id} value={org.id}>{org.name}</option>)}</select></label>
+            <label><span>작업 SKU</span><select disabled={loading || organizationProducts.length === 0} onChange={event => setProductId(event.target.value)} value={productId}><option value="">새 상품 등록</option>{organizationProducts.map(product => <option key={product.id} value={product.id}>{product.sku} · {product.title}</option>)}</select></label>
+          </div>
         </div>
+        <aside className="at-admin-release-panel" aria-label="buyer 공개 준비도">
+          <div><span>RELEASE READINESS</span><small>필수 증거와 허용 사양을 승인한 뒤 공개합니다.</small></div>
+          <ol>{workflowSteps.map(step => <li data-state={step.state} key={step.number}><b>{step.number}</b><span>{step.label}</span><small>{step.state === "complete" ? "완료" : step.state === "current" ? "진행" : "대기"}</small></li>)}</ol>
+        </aside>
       </section>
 
       <div className="at-model-admin-layout">

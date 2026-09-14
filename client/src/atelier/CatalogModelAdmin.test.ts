@@ -29,8 +29,9 @@ describe("protected owner GLB intake screen", () => {
   });
 
   it("guides brand-admins through the product, photo, personalization, and buyer-publication sequence", () => {
-    expect(source).toContain("PRODUCT RELEASE PATH");
-    expect(source).toContain("WORKING PRODUCT");
+    expect(source).toContain("SKU 운영 보드");
+    expect(source).toContain("WORKING SKU");
+    expect(source).toContain("RELEASE READINESS");
     expect(source).toContain("필수 5면 사진");
     expect(source).toContain("개인화 방식");
     expect(source).toContain("buyer 공개");
