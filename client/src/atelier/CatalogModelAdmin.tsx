@@ -85,6 +85,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
   const [photoReviewNote, setPhotoReviewNote] = useState("");
   const [migrationReady, setMigrationReady] = useState(true);
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
+  const [isRegisteringImages, setIsRegisteringImages] = useState(false);
 
   const organizationProducts = useMemo(
     () => products.filter(product => product.organization_id === organizationId),
@@ -206,7 +207,7 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
   }, [user?.id]);
 
   useEffect(() => {
-    setProductId(current => organizationProducts.some(product => product.id === current) ? current : organizationProducts[0]?.id ?? "");
+    setProductId(current => organizationProducts.some(product => product.id === current) ? current : "");
   }, [organizationProducts]);
 
   const sendAdminMagicLink = async () => {
@@ -354,23 +355,23 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
       </header>
       {message && <p aria-live="polite" className="at-model-admin-message">{message}</p>}
 
-      <section className="at-admin-operations-board" aria-label="SKU 운영 보드">
+      {productId && !isCreatingProduct && !isRegisteringImages && <section className="at-admin-operations-board" aria-label="SKU 운영 보드">
         <div className="at-admin-current-sku">
           <div className="at-admin-current-sku-heading"><PackageCheck size={20} /><span><small>WORKING SKU</small><b>{selectedProduct ? `${selectedProduct.sku} · ${selectedProduct.title}` : "새 상품을 등록하거나 기존 SKU를 선택하세요"}</b></span></div>
           <div className="at-admin-current-sku-selectors">
             <label><span>소유 조직</span><select disabled={loading || organizations.length === 0} onChange={event => setOrganizationId(event.target.value)} value={organizationId}><option value="">조직 선택</option>{organizations.map(org => <option key={org.id} value={org.id}>{org.name}</option>)}</select></label>
-            <label><span>작업 SKU</span><select disabled={loading || organizationProducts.length === 0} onChange={event => { setProductId(event.target.value); setIsCreatingProduct(!event.target.value); }} value={productId}><option value="">새 상품 등록</option>{organizationProducts.map(product => <option key={product.id} value={product.id}>{product.sku} · {product.title}</option>)}</select></label>
+            <label><span>작업 SKU</span><select disabled={loading || organizationProducts.length === 0} onChange={event => { setProductId(event.target.value); setIsCreatingProduct(false); setIsRegisteringImages(false); }} value={productId}><option value="">상품 선택</option>{organizationProducts.map(product => <option key={product.id} value={product.id}>{product.sku} · {product.title}</option>)}</select></label>
           </div>
         </div>
         <aside className="at-admin-release-panel" aria-label="buyer 공개 준비도">
           <div><span>RELEASE READINESS</span><small>필수 증거와 허용 사양을 승인한 뒤 공개합니다.</small></div>
           <ol>{workflowSteps.map(step => <li data-state={step.state} key={step.number}><b>{step.number}</b><span>{step.label}</span><small>{step.state === "complete" ? "완료" : step.state === "current" ? "진행" : "대기"}</small></li>)}</ol>
         </aside>
-      </section>
+      </section>}
 
-      {!productId && !isCreatingProduct ? <section className="at-operator-start-card" aria-label="새 상품 등록 시작">
-        <div className="at-operator-start-primary"><span>START A PRODUCT</span><h2>새 상품을 등록하세요</h2><p>먼저 SKU와 실물·박스 정보를 입력합니다. 저장 후 5면 사진, 로고·인쇄 방식, buyer 공개 검토가 순서대로 열립니다.</p><button className="at-primary" onClick={() => setIsCreatingProduct(true)} type="button"><PackageCheck size={17} /> 새 상품 등록 시작</button></div>
-        <div className="at-operator-prep-list"><div><FileUp size={18} /><span><b>지금 준비할 자료</b><small>상품명, SKU, 실물 치수, 박스 치수</small></span></div><div><HardDrive size={18} /><span><b>다음 단계에서 준비</b><small>정면·좌·후·우·상면 원본 사진 5장</small></span></div><div><ShieldCheck size={18} /><span><b>공개 전 확인</b><small>사용 권리와 인쇄·로고 적용 방식</small></span></div></div>
+      {!productId && !isCreatingProduct && !isRegisteringImages ? <section className="at-admin-action-launcher" aria-label="상품 관리 행동">
+        <button className="at-admin-action-card" onClick={() => { setIsCreatingProduct(true); setIsRegisteringImages(false); }} type="button"><PackageCheck size={24} /><span><b>상품 등록</b><small>SKU · 규격</small></span></button>
+        <button className="at-admin-action-card" onClick={() => { setIsRegisteringImages(true); setIsCreatingProduct(false); }} type="button"><FileUp size={24} /><span><b>상품 이미지 등록</b><small>정면 · 좌 · 후 · 우 · 상</small></span></button>
       </section> : <div className="at-model-admin-layout">
         {isCreatingProduct && <section className="at-model-admin-card at-admin-stage-card at-admin-stage-master" aria-label="상품 마스터 초안 등록">
           <ReferenceProductMasterIntake
@@ -384,10 +385,11 @@ export default function CatalogModelAdmin({ user }: { user: User | null }) {
           />
         </section>}
 
-        {!productId ? <aside className="at-admin-preflight-card" aria-label="등록 전 준비 사항">
-          <div><span>NEXT ACTION</span><h2>상품 마스터부터 등록하세요</h2><p>SKU와 실물·박스 치수를 저장하면 같은 화면에서 5면 증거, 허용 개인화 방식, buyer 공개 검토를 이어갈 수 있습니다.</p></div>
-          <ol><li><b>01</b><span><strong>상품 마스터 저장</strong><small>중복 SKU와 기본 치수 확인</small></span></li><li><b>02</b><span><strong>5면 실물 증거 등록</strong><small>front · left · rear · right · top</small></span></li><li><b>03</b><span><strong>허용 사양과 공개 검토</strong><small>buyer 노출 전 승인</small></span></li></ol>
-        </aside> : <>
+        {isRegisteringImages ? <section className="at-model-admin-card at-admin-stage-card at-admin-stage-evidence" aria-label="상품 이미지 등록">
+          <div className="at-model-admin-card-heading"><FileUp size={20} /><div><span>PRODUCT IMAGES</span><h2>상품 이미지 등록</h2></div></div>
+          <label className="at-image-task-select"><span>상품 선택</span><select disabled={loading || organizationProducts.length === 0} onChange={event => setProductId(event.target.value)} value={productId}><option value="">상품 선택</option>{organizationProducts.map(product => <option key={product.id} value={product.id}>{product.sku} · {product.title}</option>)}</select></label>
+          {productId && organizationId && <ReferenceProductPhotoIntake organizationId={organizationId} onRegistered={load} productId={productId} userId={user.id} />}
+        </section> : !productId ? null : <>
           {organizationId && (
             <section className="at-model-admin-card at-admin-stage-card at-admin-stage-evidence" aria-label="5면 사진 초안 등록">
               <ReferenceProductPhotoIntake
